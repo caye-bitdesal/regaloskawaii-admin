@@ -1,0 +1,26 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "regaloskawaii-admin",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-02-24",
+	"compatibility_flags": ["nodejs_compat"],
+	// No cambiar estos nombres: un nombre nuevo crea una base de datos / bucket vacíos.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "regaloskawaii",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "regaloskawaii-media",
+		},
+	],
+	// Plugins aislados: solo en Workers Paid. Se deja desactivado (plan gratuito).
+	// "worker_loaders": [{ "binding": "LOADER" }],
+	// Cron de mantenimiento cada 15 min (debe coincidir con generalCron en src/worker.ts)
+	"triggers": {
+		"crons": ["*/15 * * * *"],
+	},
+}

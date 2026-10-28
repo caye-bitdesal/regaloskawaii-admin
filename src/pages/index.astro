@@ -1,0 +1,55 @@
+---
+// Portada mínima del Worker de administración (solo para revisar el contenido en local).
+// La web pública real se construye aparte (Astro estático en Cloudflare Pages).
+import { getEmDashCollection, getSiteSettings } from "emdash";
+import { Image } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const [coleccionesResult, productosResult] = await Promise.all([
+	getEmDashCollection("colecciones", { limit: 50 }),
+	getEmDashCollection("productos", { limit: 24 }),
+]);
+const colecciones = [...coleccionesResult.entries].sort(
+	(a, b) => (a.data.orden ?? 100) - (b.data.orden ?? 100),
+);
+const productos = productosResult.entries;
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
+	await getSiteSettings(),
+);
+if (Astro.cache?.enabled) {
+	Astro.cache.set(coleccionesResult.cacheHint);
+	Astro.cache.set(productosResult.cacheHint);
+}
+---
+
+<Base title={siteTitle} description={siteTagline}>
+	<h1>{siteTitle}</h1>
+	<p>{siteTagline}</p>
+
+	<h2>Colecciones</h2>
+	<ul>
+		{colecciones.map((c) => <li>{c.data.title}</li>)}
+	</ul>
+
+	<h2>Productos publicados</h2>
+	{
+		productos.length === 0 ? (
+			<p>
+				Todavía no hay productos publicados.{" "}
+				<a href="/_emdash/admin/content/productos/new">Crear uno</a>.
+			</p>
+		) : (
+			<ul>
+				{productos.map((p) => (
+					<li>
+						{p.data.imagen && <Image image={p.data.imagen} />}
+						<strong>{p.data.title}</strong>
+						{p.data.precio_ref != null && <span> · {p.data.precio_ref} €</span>}
+						{p.data.resumen && <p>{p.data.resumen}</p>}
+					</li>
+				))}
+			</ul>
+		)
+	}
+</Base>

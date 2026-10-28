@@ -1,0 +1,516 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"defaultLocale": "es",
+	"meta": {
+		"name": "Regalos Kawaii",
+		"description": "Catálogo de regalos kawaii con enlaces de afiliado",
+		"author": "Bitdesal"
+	},
+	"settings": {
+		"title": "Regalos Kawaii",
+		"tagline": "Regalos kawaii bonitos, originales y al mejor precio",
+		"timezone": "Europe/Madrid"
+	},
+	"collections": [
+		{
+			"slug": "productos",
+			"label": "Productos",
+			"labelSingular": "Producto",
+			"description": "Productos del catálogo con su enlace de afiliado",
+			"icon": "gift",
+			"sortOrder": 1,
+			"urlPattern": "/producto/{slug}",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"titleField": "title",
+			"admin": {
+				"listColumns": ["id_externo", "precio_ref", "tipo", "destacado"]
+			},
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Nombre",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "resumen",
+					"label": "Resumen (1–2 frases para la tarjeta)",
+					"type": "text",
+					"searchable": true,
+					"validation": { "maxLength": 200 }
+				},
+				{
+					"slug": "descripcion",
+					"label": "Descripción (texto propio, no copiar el de la tienda)",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "tienda",
+					"label": "Tienda",
+					"type": "reference",
+					"required": true,
+					"validation": { "targetCollection": "tiendas" }
+				},
+				{
+					"slug": "id_externo",
+					"label": "ID en la tienda (ASIN en Amazon)",
+					"type": "string",
+					"required": true,
+					"indexed": true,
+					"validation": { "maxLength": 40 }
+				},
+				{
+					"slug": "precio_ref",
+					"label": "Precio de referencia (€)",
+					"type": "number",
+					"validation": { "min": 0 }
+				},
+				{
+					"slug": "precio_actualizado",
+					"label": "Precio comprobado el",
+					"type": "datetime"
+				},
+				{
+					"slug": "imagen",
+					"label": "Imagen principal",
+					"type": "image"
+				},
+				{
+					"slug": "galeria",
+					"label": "Más imágenes",
+					"type": "repeater",
+					"validation": {
+						"maxItems": 8,
+						"subFields": [
+							{ "slug": "imagen", "label": "Imagen", "type": "image", "required": true }
+						]
+					}
+				},
+				{
+					"slug": "fuente_imagen",
+					"label": "Origen de las imágenes",
+					"type": "select",
+					"defaultValue": "propia",
+					"validation": { "options": ["propia", "marca"] }
+				},
+				{
+					"slug": "tipo",
+					"label": "Tipo",
+					"type": "select",
+					"required": true,
+					"indexed": true,
+					"defaultValue": "generico",
+					"validation": { "options": ["oficial", "generico"] }
+				},
+				{
+					"slug": "edad_min",
+					"label": "Edad mínima recomendada",
+					"type": "integer",
+					"indexed": true,
+					"validation": { "min": 0, "max": 99 }
+				},
+				{
+					"slug": "colecciones",
+					"label": "Colecciones",
+					"type": "reference",
+					"validation": { "targetCollection": "colecciones", "multiple": true }
+				},
+				{
+					"slug": "destacado",
+					"label": "Destacado en portada",
+					"type": "boolean",
+					"indexed": true,
+					"defaultValue": false
+				},
+				{
+					"slug": "para_grabar",
+					"label": "Comprado para fotos y vídeos",
+					"type": "boolean",
+					"defaultValue": false
+				},
+				{
+					"slug": "notas",
+					"label": "Notas internas (no se publican)",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "colecciones",
+			"label": "Colecciones",
+			"labelSingular": "Colección",
+			"description": "Escaparates temáticos de la web (por precio, viral, papelería…)",
+			"icon": "squares-four",
+			"sortOrder": 2,
+			"urlPattern": "/coleccion/{slug}",
+			"supports": ["drafts", "seo"],
+			"titleField": "title",
+			"admin": {
+				"listColumns": ["orden", "destacada"]
+			},
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Nombre",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "descripcion",
+					"label": "Texto de la página",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "imagen",
+					"label": "Imagen de portada",
+					"type": "image"
+				},
+				{
+					"slug": "orden",
+					"label": "Orden en el menú",
+					"type": "integer",
+					"indexed": true,
+					"defaultValue": 100
+				},
+				{
+					"slug": "destacada",
+					"label": "Mostrar en portada",
+					"type": "boolean",
+					"defaultValue": false
+				}
+			]
+		},
+		{
+			"slug": "tiendas",
+			"label": "Tiendas",
+			"labelSingular": "Tienda",
+			"description": "Tiendas y programas de afiliados: cómo se construye cada enlace",
+			"icon": "storefront",
+			"sortOrder": 3,
+			"routable": false,
+			"supports": [],
+			"titleField": "title",
+			"admin": {
+				"listColumns": ["activa"],
+				"quickCreate": false
+			},
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Nombre",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "plantilla_url",
+					"label": "Plantilla del enlace ({id} = ID del producto, {tag} = ID de seguimiento)",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "tag_web",
+					"label": "ID de seguimiento: web",
+					"type": "string"
+				},
+				{
+					"slug": "tag_telegram",
+					"label": "ID de seguimiento: Telegram",
+					"type": "string"
+				},
+				{
+					"slug": "tag_tiktok",
+					"label": "ID de seguimiento: TikTok / Instagram",
+					"type": "string"
+				},
+				{
+					"slug": "activa",
+					"label": "Activa",
+					"type": "boolean",
+					"defaultValue": true
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Páginas",
+			"labelSingular": "Página",
+			"description": "Páginas fijas: quiénes somos, aviso legal, privacidad, afiliados",
+			"icon": "file-text",
+			"sortOrder": 4,
+			"urlPattern": "/{slug}",
+			"supports": ["drafts", "revisions", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Título",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Contenido",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "personaje",
+			"label": "Personajes",
+			"labelSingular": "Personaje",
+			"hierarchical": false,
+			"collections": ["productos"],
+			"terms": [
+				{ "slug": "kuromi", "label": "Kuromi" },
+				{ "slug": "cinnamoroll", "label": "Cinnamoroll" },
+				{ "slug": "my-melody", "label": "My Melody" },
+				{ "slug": "hello-kitty", "label": "Hello Kitty" },
+				{ "slug": "pompompurin", "label": "Pompompurin" },
+				{ "slug": "sumikko-gurashi", "label": "Sumikko Gurashi" },
+				{ "slug": "pusheen", "label": "Pusheen" },
+				{ "slug": "labubu", "label": "Labubu" }
+			]
+		},
+		{
+			"name": "marca",
+			"label": "Marcas",
+			"labelSingular": "Marca",
+			"hierarchical": false,
+			"collections": ["productos"],
+			"terms": [
+				{ "slug": "sanrio", "label": "Sanrio" },
+				{ "slug": "san-x", "label": "San-X" },
+				{ "slug": "pop-mart", "label": "Pop Mart" },
+				{ "slug": "sonny-angel", "label": "Sonny Angel" },
+				{ "slug": "smiski", "label": "Smiski" },
+				{ "slug": "squishmallows", "label": "Squishmallows" },
+				{ "slug": "bandai", "label": "Bandai" }
+			]
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Menú principal",
+			"items": [
+				{ "type": "custom", "label": "Inicio", "url": "/" },
+				{ "type": "custom", "label": "Menos de 10 €", "url": "/coleccion/menos-de-10" },
+				{ "type": "custom", "label": "Lo más viral", "url": "/coleccion/lo-mas-viral" },
+				{ "type": "custom", "label": "Papelería", "url": "/coleccion/papeleria" }
+			]
+		}
+	],
+	"content": {
+		"tiendas": [
+			{
+				"id": "tienda-amazon-es",
+				"status": "published",
+				"data": {
+					"title": "Amazon España",
+					"plantilla_url": "https://www.amazon.es/dp/{id}?tag={tag}",
+					"tag_web": "PENDIENTE-21",
+					"tag_telegram": "PENDIENTE-21",
+					"tag_tiktok": "PENDIENTE-21",
+					"activa": true
+				}
+			}
+		],
+		"colecciones": [
+			{
+				"id": "col-menos-10",
+				"slug": "menos-de-10",
+				"status": "published",
+				"data": {
+					"title": "Regalos kawaii por menos de 10 €",
+					"descripcion": "Detalles kawaii baratos para amigos invisibles, cumpleaños o para darse un capricho.",
+					"orden": 10,
+					"destacada": true
+				}
+			},
+			{
+				"id": "col-10-20",
+				"slug": "de-10-a-20",
+				"status": "published",
+				"data": {
+					"title": "Regalos kawaii de 10 a 20 €",
+					"descripcion": "Peluches, estuches, lámparas y más regalos kawaii por menos de 20 €.",
+					"orden": 20,
+					"destacada": true
+				}
+			},
+			{
+				"id": "col-20-40",
+				"slug": "de-20-a-40",
+				"status": "published",
+				"data": {
+					"title": "Regalos kawaii de 20 a 40 €",
+					"descripcion": "Mochilas, peluches grandes y regalos kawaii especiales.",
+					"orden": 30,
+					"destacada": false
+				}
+			},
+			{
+				"id": "col-viral",
+				"slug": "lo-mas-viral",
+				"status": "published",
+				"data": {
+					"title": "Lo más viral",
+					"descripcion": "Los coleccionables kawaii que arrasan en TikTok.",
+					"orden": 40,
+					"destacada": true
+				}
+			},
+			{
+				"id": "col-papeleria",
+				"slug": "papeleria",
+				"status": "published",
+				"data": {
+					"title": "Papelería kawaii",
+					"descripcion": "Bolígrafos, washi tape, pegatinas y notas adhesivas kawaii para el cole o la oficina.",
+					"orden": 50,
+					"destacada": false
+				}
+			},
+			{
+				"id": "col-adultos",
+				"slug": "kawaii-para-adultos",
+				"status": "published",
+				"data": {
+					"title": "Kawaii para adultos",
+					"descripcion": "Escritorio, cocina y tecnología con estilo kawaii.",
+					"orden": 60,
+					"destacada": false
+				}
+			}
+		],
+		"productos": [
+			{
+				"id": "prod-ejemplo-llavero",
+				"slug": "ejemplo-llavero-peluche-kuromi",
+				"status": "draft",
+				"data": {
+					"title": "EJEMPLO – Llavero de peluche Kuromi",
+					"resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+					"tienda": "$ref:tienda-amazon-es",
+					"id_externo": "B000000000",
+					"precio_ref": 9.99,
+					"fuente_imagen": "propia",
+					"tipo": "oficial",
+					"edad_min": 6,
+					"colecciones": ["$ref:col-menos-10"],
+					"destacado": false,
+					"para_grabar": true,
+					"notas": "Producto de ejemplo del seed."
+				},
+				"taxonomies": {
+					"personaje": ["kuromi"],
+					"marca": ["sanrio"]
+				}
+			},
+			{
+				"id": "prod-ejemplo-washi",
+				"slug": "ejemplo-set-washi-tape",
+				"status": "draft",
+				"data": {
+					"title": "EJEMPLO – Set de washi tape kawaii",
+					"resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+					"tienda": "$ref:tienda-amazon-es",
+					"id_externo": "B000000001",
+					"precio_ref": 7.5,
+					"fuente_imagen": "propia",
+					"tipo": "generico",
+					"edad_min": 8,
+					"colecciones": ["$ref:col-menos-10", "$ref:col-papeleria"],
+					"destacado": false,
+					"para_grabar": true,
+					"notas": "Producto de ejemplo del seed."
+				}
+			},
+			{
+				"id": "prod-ejemplo-labubu",
+				"slug": "ejemplo-labubu-caja-sorpresa",
+				"status": "draft",
+				"data": {
+					"title": "EJEMPLO – Labubu caja sorpresa",
+					"resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+					"tienda": "$ref:tienda-amazon-es",
+					"id_externo": "B000000002",
+					"precio_ref": 24.9,
+					"fuente_imagen": "marca",
+					"tipo": "oficial",
+					"edad_min": 15,
+					"colecciones": ["$ref:col-viral", "$ref:col-20-40"],
+					"destacado": true,
+					"para_grabar": false,
+					"notas": "Producto de ejemplo del seed. Ojo con las falsificaciones: solo vendedor oficial de Pop Mart."
+				},
+				"taxonomies": {
+					"personaje": ["labubu"],
+					"marca": ["pop-mart"]
+				}
+			}
+		],
+		"pages": [
+			{
+				"id": "page-afiliados",
+				"slug": "aviso-afiliados",
+				"status": "published",
+				"data": {
+					"title": "Enlaces de afiliado",
+					"content": [
+						{
+							"_type": "block",
+							"_key": "a0",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "a1",
+									"text": "Regalos Kawaii participa en programas de afiliados. Cuando compras a través de nuestros enlaces podemos recibir una pequeña comisión, sin coste adicional para ti."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"_key": "a2",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "a3",
+									"text": "Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "page-sobre",
+				"slug": "quienes-somos",
+				"status": "draft",
+				"data": {
+					"title": "Quiénes somos",
+					"content": [
+						{
+							"_type": "block",
+							"_key": "s0",
+							"style": "normal",
+							"children": [
+								{ "_type": "span", "_key": "s1", "text": "Pendiente de redactar." }
+							]
+						}
+					]
+				}
+			}
+		]
+	}
+}
