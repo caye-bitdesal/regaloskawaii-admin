@@ -1,0 +1,25 @@
+{
+    "success": true,
+    "data": {
+        "parents": [
+            {
+                "id": "01M61R19KEXN3VFX3T9NSNMJ70",
+                "slug": "ejemplo-llavero-peluche-kuromi",
+                "collection": "productos",
+                "title": "EJEMPLO – Llavero de peluche Kuromi",
+                "locale": "es",
+                "translationGroup": "01M61R19KEXN3VFX3T9NSNMJ70",
+                "sortOrder": 0
+            },
+            {
+                "id": "01M61R19M3XH5SGGTHNAN6YGWC",
+                "slug": "ejemplo-set-washi-tape",
+                "collection": "productos",
+                "title": "EJEMPLO – Set de washi tape kawaii",
+                "locale": "es",
+                "translationGroup": "01M61R19M3XH5SGGTHNAN6YGWC",
+                "sortOrder": 0
+            }
+        ]
+    }
+}

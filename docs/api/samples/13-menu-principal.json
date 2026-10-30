@@ -1,0 +1,82 @@
+{
+    "success": true,
+    "data": {
+        "id": "01M61R14WYXBD93ZA7QT9E1JZY",
+        "name": "primary",
+        "label": "Menú principal",
+        "createdAt": "2026-10-28T17:13:24.126Z",
+        "updatedAt": "2026-10-28T17:13:24.126Z",
+        "locale": "es",
+        "translationGroup": "01M61R14WYXBD93ZA7QT9E1JZY",
+        "items": [
+            {
+                "id": "01M61R19MS58YXGCEJD75QRDA4",
+                "menuId": "01M61R14WYXBD93ZA7QT9E1JZY",
+                "parentId": null,
+                "sortOrder": 0,
+                "type": "custom",
+                "referenceCollection": null,
+                "referenceId": null,
+                "customUrl": "/",
+                "label": "Inicio",
+                "titleAttr": null,
+                "target": null,
+                "cssClasses": null,
+                "createdAt": "2026-10-28T17:13:28.985Z",
+                "locale": "es",
+                "translationGroup": "01M61R19MS58YXGCEJD75QRDA4"
+            },
+            {
+                "id": "01M61R19MSH015AJN3RZBFHMP4",
+                "menuId": "01M61R14WYXBD93ZA7QT9E1JZY",
+                "parentId": null,
+                "sortOrder": 1,
+                "type": "custom",
+                "referenceCollection": null,
+                "referenceId": null,
+                "customUrl": "/coleccion/menos-de-10",
+                "label": "Menos de 10 €",
+                "titleAttr": null,
+                "target": null,
+                "cssClasses": null,
+                "createdAt": "2026-10-28T17:13:28.985Z",
+                "locale": "es",
+                "translationGroup": "01M61R19MSH015AJN3RZBFHMP4"
+            },
+            {
+                "id": "01M61R19MSHM9CXRTH8CFQ4EG6",
+                "menuId": "01M61R14WYXBD93ZA7QT9E1JZY",
+                "parentId": null,
+                "sortOrder": 2,
+                "type": "custom",
+                "referenceCollection": null,
+                "referenceId": null,
+                "customUrl": "/coleccion/lo-mas-viral",
+                "label": "Lo más viral",
+                "titleAttr": null,
+                "target": null,
+                "cssClasses": null,
+                "createdAt": "2026-10-28T17:13:28.985Z",
+                "locale": "es",
+                "translationGroup": "01M61R19MSHM9CXRTH8CFQ4EG6"
+            },
+            {
+                "id": "01M61R19MSFY1N2RJ3SKQ90YBK",
+                "menuId": "01M61R14WYXBD93ZA7QT9E1JZY",
+                "parentId": null,
+                "sortOrder": 3,
+                "type": "custom",
+                "referenceCollection": null,
+                "referenceId": null,
+                "customUrl": "/coleccion/papeleria",
+                "label": "Papelería",
+                "titleAttr": null,
+                "target": null,
+                "cssClasses": null,
+                "createdAt": "2026-10-28T17:13:28.985Z",
+                "locale": "es",
+                "translationGroup": "01M61R19MSFY1N2RJ3SKQ90YBK"
+            }
+        ]
+    }
+}

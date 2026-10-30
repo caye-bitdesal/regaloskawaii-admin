@@ -1,0 +1,31 @@
+[
+	{
+		"nombre": "Llavero de peluche Kuromi",
+		"enlace": "https://www.amazon.es/Sanrio-Llavero-Kuromi/dp/B0C1234567?tag=regaloskawaii-21",
+		"precio": 9.99,
+		"tipo": "oficial",
+		"edad_min": 6,
+		"resumen": "Llavero suave de Kuromi para la mochila o las llaves.",
+		"descripcion": "Llavero de peluche oficial de Sanrio, de unos 12 cm.\n\nPerfecto como detalle para fans de Kuromi.",
+		"colecciones": ["menos-de-10"],
+		"personajes": ["Kuromi"],
+		"marcas": ["Sanrio"],
+		"imagen": "fotos/kuromi.jpg",
+		"para_grabar": true
+	},
+	{
+		"nombre": "Set de 6 bolígrafos de gel pastel",
+		"enlace": "https://www.amazon.es/dp/B0D7654321",
+		"precio": 7.49,
+		"colecciones": ["menos-de-10", "papeleria"]
+	},
+	{
+		"nombre": "Lámpara de silicona gato",
+		"enlace": "https://s.click.aliexpress.com/e/_DlAbCdE",
+		"id_externo": "1005006123456789",
+		"tienda": "AliExpress",
+		"precio": 6.3,
+		"colecciones": ["menos-de-10"],
+		"destacado": true
+	}
+]

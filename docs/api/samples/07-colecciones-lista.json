@@ -1,0 +1,200 @@
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": "01M61R19K2QS549EYQXX7FTVNE",
+                "type": "colecciones",
+                "slug": "kawaii-para-adultos",
+                "status": "published",
+                "data": {
+                    "title": "Kawaii para adultos",
+                    "descripcion": "Escritorio, cocina y tecnología con estilo kawaii.",
+                    "orden": 60,
+                    "destacada": 0
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.930Z",
+                "updatedAt": "2026-10-28T17:13:28.933Z",
+                "publishedAt": "2026-10-28T17:13:28.930Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19K54ZNYGK4PHMME11SY",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19K2QS549EYQXX7FTVNE",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19JA8WH6112S7E01Y2B7",
+                "type": "colecciones",
+                "slug": "papeleria",
+                "status": "published",
+                "data": {
+                    "title": "Papelería kawaii",
+                    "descripcion": "Bolígrafos, washi tape, pegatinas y notas adhesivas kawaii para el cole o la oficina.",
+                    "orden": 50,
+                    "destacada": 0
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.906Z",
+                "updatedAt": "2026-10-28T17:13:28.907Z",
+                "publishedAt": "2026-10-28T17:13:28.906Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19JB865PEJSFBNEHN3HS",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19JA8WH6112S7E01Y2B7",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19J3HCYA7RQTCVDNW8HG",
+                "type": "colecciones",
+                "slug": "lo-mas-viral",
+                "status": "published",
+                "data": {
+                    "title": "Lo más viral",
+                    "descripcion": "Los coleccionables kawaii que arrasan en TikTok.",
+                    "orden": 40,
+                    "destacada": 1
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.899Z",
+                "updatedAt": "2026-10-28T17:13:28.901Z",
+                "publishedAt": "2026-10-28T17:13:28.899Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19J6AK1RAG7G2SWWQRTS",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19J3HCYA7RQTCVDNW8HG",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19J0DBVNHPYNV0ER6HGA",
+                "type": "colecciones",
+                "slug": "de-20-a-40",
+                "status": "published",
+                "data": {
+                    "title": "Regalos kawaii de 20 a 40 €",
+                    "descripcion": "Mochilas, peluches grandes y regalos kawaii especiales.",
+                    "orden": 30,
+                    "destacada": 0
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.896Z",
+                "updatedAt": "2026-10-28T17:13:28.897Z",
+                "publishedAt": "2026-10-28T17:13:28.896Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19J1JFBCHX55JME8YM8B",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19J0DBVNHPYNV0ER6HGA",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19HWJ8196HQYKBE0NZQN",
+                "type": "colecciones",
+                "slug": "de-10-a-20",
+                "status": "published",
+                "data": {
+                    "title": "Regalos kawaii de 10 a 20 €",
+                    "descripcion": "Peluches, estuches, lámparas y más regalos kawaii por menos de 20 €.",
+                    "orden": 20,
+                    "destacada": 1
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.892Z",
+                "updatedAt": "2026-10-28T17:13:28.893Z",
+                "publishedAt": "2026-10-28T17:13:28.892Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19HYZ0NNNR862A4JTZ36",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19HWJ8196HQYKBE0NZQN",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19HPS906VXNFW97FAGEB",
+                "type": "colecciones",
+                "slug": "menos-de-10",
+                "status": "published",
+                "data": {
+                    "title": "Regalos kawaii por menos de 10 €",
+                    "descripcion": "Detalles kawaii baratos para amigos invisibles, cumpleaños o para darse un capricho.",
+                    "orden": 10,
+                    "destacada": 1
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.887Z",
+                "updatedAt": "2026-10-28T17:13:28.888Z",
+                "publishedAt": "2026-10-28T17:13:28.886Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19HR02QFTJQ4N2RFKHPY",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19HPS906VXNFW97FAGEB",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            }
+        ],
+        "total": 6
+    }
+}

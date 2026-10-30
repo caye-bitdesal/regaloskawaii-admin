@@ -1,0 +1,63 @@
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": "01M61R19MK8X0MNCQ8WHCJFBYC",
+                "type": "pages",
+                "slug": "aviso-afiliados",
+                "status": "published",
+                "data": {
+                    "title": "Enlaces de afiliado",
+                    "content": [
+                        {
+                            "_type": "block",
+                            "_key": "a0",
+                            "style": "normal",
+                            "children": [
+                                {
+                                    "_type": "span",
+                                    "_key": "a1",
+                                    "text": "Regalos Kawaii participa en programas de afiliados. Cuando compras a través de nuestros enlaces podemos recibir una pequeña comisión, sin coste adicional para ti."
+                                }
+                            ]
+                        },
+                        {
+                            "_type": "block",
+                            "_key": "a2",
+                            "style": "normal",
+                            "children": [
+                                {
+                                    "_type": "span",
+                                    "_key": "a3",
+                                    "text": "Como Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables."
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.979Z",
+                "updatedAt": "2026-10-28T17:13:28.980Z",
+                "publishedAt": "2026-10-28T17:13:28.979Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19MNYMCH7QDD7SYRE23J",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19MK8X0MNCQ8WHCJFBYC",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            }
+        ],
+        "total": 1
+    }
+}

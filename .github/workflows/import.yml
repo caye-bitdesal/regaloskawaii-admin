@@ -1,0 +1,77 @@
+# Imports the product JSON files pushed to datos/ into the production EmDash.
+#
+# Runs on every push that adds or changes a .json in datos/, or manually from
+# GitHub → Actions → "Import products" → Run workflow.
+#
+# Setup (GitHub → Settings → Secrets and variables → Actions):
+#   - Variable  EMDASH_URL   = https://admin.regaloskawaii.es
+#   - Secret    EMDASH_TOKEN = token created in the production admin panel with
+#                              content and media write permissions (never in the repo)
+name: Import products
+
+on:
+  push:
+    branches: [main]
+    paths: ["datos/**.json"]
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "JSON file to import (repo path, e.g. datos/top-kawaii-31-10.json)"
+        required: true
+      publish:
+        description: "Publish right away (otherwise products are created as drafts)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: import-products
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EMDASH_URL: ${{ vars.EMDASH_URL }}
+      EMDASH_TOKEN: ${{ secrets.EMDASH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Find files to import
+        id: files
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "list=${{ inputs.file }}" >> "$GITHUB_OUTPUT"
+          else
+            list=$(git diff --name-only --diff-filter=AM HEAD^ HEAD -- 'datos/*.json' | tr '\n' ' ')
+            echo "list=$list" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate (dry run)
+        if: steps.files.outputs.list != ''
+        run: |
+          for f in ${{ steps.files.outputs.list }}; do
+            echo "::group::$f"
+            node scripts/importar-productos.mjs "$f" --simular
+            echo "::endgroup::"
+          done
+
+      - name: Import
+        if: steps.files.outputs.list != ''
+        run: |
+          for f in ${{ steps.files.outputs.list }}; do
+            echo "::group::$f"
+            node scripts/importar-productos.mjs "$f" ${{ inputs.publish && '--publicar' || '' }}
+            echo "::endgroup::"
+          done
+
+      - name: Fill in missing photos
+        if: steps.files.outputs.list != ''
+        continue-on-error: true
+        run: node scripts/rellenar-fotos.mjs

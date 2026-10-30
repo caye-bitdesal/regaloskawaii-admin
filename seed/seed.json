@@ -21,10 +21,20 @@
 			"icon": "gift",
 			"sortOrder": 1,
 			"urlPattern": "/producto/{slug}",
-			"supports": ["drafts", "revisions", "search", "seo"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"search",
+				"seo"
+			],
 			"titleField": "title",
 			"admin": {
-				"listColumns": ["id_externo", "precio_ref", "tipo", "destacado"]
+				"listColumns": [
+					"id_externo",
+					"precio_ref",
+					"tipo",
+					"destacado"
+				]
 			},
 			"fields": [
 				{
@@ -39,7 +49,9 @@
 					"label": "Resumen (1–2 frases para la tarjeta)",
 					"type": "text",
 					"searchable": true,
-					"validation": { "maxLength": 200 }
+					"validation": {
+						"maxLength": 200
+					}
 				},
 				{
 					"slug": "descripcion",
@@ -52,7 +64,9 @@
 					"label": "Tienda",
 					"type": "reference",
 					"required": true,
-					"validation": { "targetCollection": "tiendas" }
+					"validation": {
+						"targetCollection": "tiendas"
+					}
 				},
 				{
 					"slug": "id_externo",
@@ -60,13 +74,22 @@
 					"type": "string",
 					"required": true,
 					"indexed": true,
-					"validation": { "maxLength": 40 }
+					"validation": {
+						"maxLength": 40
+					}
+				},
+				{
+					"slug": "enlace_afiliado",
+					"label": "Enlace de afiliado (opcional: si está vacío se usa la plantilla de la tienda)",
+					"type": "url"
 				},
 				{
 					"slug": "precio_ref",
 					"label": "Precio de referencia (€)",
 					"type": "number",
-					"validation": { "min": 0 }
+					"validation": {
+						"min": 0
+					}
 				},
 				{
 					"slug": "precio_actualizado",
@@ -85,7 +108,12 @@
 					"validation": {
 						"maxItems": 8,
 						"subFields": [
-							{ "slug": "imagen", "label": "Imagen", "type": "image", "required": true }
+							{
+								"slug": "imagen",
+								"label": "Imagen",
+								"type": "image",
+								"required": true
+							}
 						]
 					}
 				},
@@ -94,7 +122,12 @@
 					"label": "Origen de las imágenes",
 					"type": "select",
 					"defaultValue": "propia",
-					"validation": { "options": ["propia", "marca"] }
+					"validation": {
+						"options": [
+							"propia",
+							"marca"
+						]
+					}
 				},
 				{
 					"slug": "tipo",
@@ -103,20 +136,31 @@
 					"required": true,
 					"indexed": true,
 					"defaultValue": "generico",
-					"validation": { "options": ["oficial", "generico"] }
+					"validation": {
+						"options": [
+							"oficial",
+							"generico"
+						]
+					}
 				},
 				{
 					"slug": "edad_min",
 					"label": "Edad mínima recomendada",
 					"type": "integer",
 					"indexed": true,
-					"validation": { "min": 0, "max": 99 }
+					"validation": {
+						"min": 0,
+						"max": 99
+					}
 				},
 				{
 					"slug": "colecciones",
 					"label": "Colecciones",
 					"type": "reference",
-					"validation": { "targetCollection": "colecciones", "multiple": true }
+					"validation": {
+						"targetCollection": "colecciones",
+						"multiple": true
+					}
 				},
 				{
 					"slug": "destacado",
@@ -146,10 +190,16 @@
 			"icon": "squares-four",
 			"sortOrder": 2,
 			"urlPattern": "/coleccion/{slug}",
-			"supports": ["drafts", "seo"],
+			"supports": [
+				"drafts",
+				"seo"
+			],
 			"titleField": "title",
 			"admin": {
-				"listColumns": ["orden", "destacada"]
+				"listColumns": [
+					"orden",
+					"destacada"
+				]
 			},
 			"fields": [
 				{
@@ -196,7 +246,9 @@
 			"supports": [],
 			"titleField": "title",
 			"admin": {
-				"listColumns": ["activa"],
+				"listColumns": [
+					"activa"
+				],
 				"quickCreate": false
 			},
 			"fields": [
@@ -243,7 +295,11 @@
 			"icon": "file-text",
 			"sortOrder": 4,
 			"urlPattern": "/{slug}",
-			"supports": ["drafts", "revisions", "seo"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"seo"
+			],
 			"fields": [
 				{
 					"slug": "title",
@@ -263,20 +319,97 @@
 	],
 	"taxonomies": [
 		{
+			"name": "categoria",
+			"label": "Categorías",
+			"labelSingular": "Categoría",
+			"hierarchical": false,
+			"collections": [
+				"productos"
+			],
+			"terms": [
+				{
+					"slug": "abrigos",
+					"label": "Abrigos"
+				},
+				{
+					"slug": "moda",
+					"label": "Moda"
+				},
+				{
+					"slug": "peluches",
+					"label": "Peluches"
+				},
+				{
+					"slug": "cosplay",
+					"label": "Cosplay"
+				},
+				{
+					"slug": "gaming",
+					"label": "Gaming"
+				},
+				{
+					"slug": "cajas-sorpresa",
+					"label": "Cajas sorpresa"
+				},
+				{
+					"slug": "squishy",
+					"label": "Squishy"
+				},
+				{
+					"slug": "papeleria",
+					"label": "Papelería"
+				},
+				{
+					"slug": "joyeria",
+					"label": "Joyería"
+				},
+				{
+					"slug": "maquillaje",
+					"label": "Maquillaje"
+				}
+			]
+		},
+		{
 			"name": "personaje",
 			"label": "Personajes",
 			"labelSingular": "Personaje",
 			"hierarchical": false,
-			"collections": ["productos"],
+			"collections": [
+				"productos"
+			],
 			"terms": [
-				{ "slug": "kuromi", "label": "Kuromi" },
-				{ "slug": "cinnamoroll", "label": "Cinnamoroll" },
-				{ "slug": "my-melody", "label": "My Melody" },
-				{ "slug": "hello-kitty", "label": "Hello Kitty" },
-				{ "slug": "pompompurin", "label": "Pompompurin" },
-				{ "slug": "sumikko-gurashi", "label": "Sumikko Gurashi" },
-				{ "slug": "pusheen", "label": "Pusheen" },
-				{ "slug": "labubu", "label": "Labubu" }
+				{
+					"slug": "kuromi",
+					"label": "Kuromi"
+				},
+				{
+					"slug": "cinnamoroll",
+					"label": "Cinnamoroll"
+				},
+				{
+					"slug": "my-melody",
+					"label": "My Melody"
+				},
+				{
+					"slug": "hello-kitty",
+					"label": "Hello Kitty"
+				},
+				{
+					"slug": "pompompurin",
+					"label": "Pompompurin"
+				},
+				{
+					"slug": "sumikko-gurashi",
+					"label": "Sumikko Gurashi"
+				},
+				{
+					"slug": "pusheen",
+					"label": "Pusheen"
+				},
+				{
+					"slug": "labubu",
+					"label": "Labubu"
+				}
 			]
 		},
 		{
@@ -284,15 +417,38 @@
 			"label": "Marcas",
 			"labelSingular": "Marca",
 			"hierarchical": false,
-			"collections": ["productos"],
+			"collections": [
+				"productos"
+			],
 			"terms": [
-				{ "slug": "sanrio", "label": "Sanrio" },
-				{ "slug": "san-x", "label": "San-X" },
-				{ "slug": "pop-mart", "label": "Pop Mart" },
-				{ "slug": "sonny-angel", "label": "Sonny Angel" },
-				{ "slug": "smiski", "label": "Smiski" },
-				{ "slug": "squishmallows", "label": "Squishmallows" },
-				{ "slug": "bandai", "label": "Bandai" }
+				{
+					"slug": "sanrio",
+					"label": "Sanrio"
+				},
+				{
+					"slug": "san-x",
+					"label": "San-X"
+				},
+				{
+					"slug": "pop-mart",
+					"label": "Pop Mart"
+				},
+				{
+					"slug": "sonny-angel",
+					"label": "Sonny Angel"
+				},
+				{
+					"slug": "smiski",
+					"label": "Smiski"
+				},
+				{
+					"slug": "squishmallows",
+					"label": "Squishmallows"
+				},
+				{
+					"slug": "bandai",
+					"label": "Bandai"
+				}
 			]
 		}
 	],
@@ -301,10 +457,26 @@
 			"name": "primary",
 			"label": "Menú principal",
 			"items": [
-				{ "type": "custom", "label": "Inicio", "url": "/" },
-				{ "type": "custom", "label": "Menos de 10 €", "url": "/coleccion/menos-de-10" },
-				{ "type": "custom", "label": "Lo más viral", "url": "/coleccion/lo-mas-viral" },
-				{ "type": "custom", "label": "Papelería", "url": "/coleccion/papeleria" }
+				{
+					"type": "custom",
+					"label": "Inicio",
+					"url": "/"
+				},
+				{
+					"type": "custom",
+					"label": "Menos de 10 €",
+					"url": "/coleccion/menos-de-10"
+				},
+				{
+					"type": "custom",
+					"label": "Lo más viral",
+					"url": "/coleccion/lo-mas-viral"
+				},
+				{
+					"type": "custom",
+					"label": "Papelería",
+					"url": "/categoria/papeleria"
+				}
 			]
 		}
 	],
@@ -319,6 +491,18 @@
 					"tag_web": "PENDIENTE-21",
 					"tag_telegram": "PENDIENTE-21",
 					"tag_tiktok": "PENDIENTE-21",
+					"activa": true
+				}
+			},
+			{
+				"id": "tienda-aliexpress",
+				"status": "published",
+				"data": {
+					"title": "AliExpress",
+					"plantilla_url": "https://es.aliexpress.com/item/{id}.html",
+					"tag_web": "",
+					"tag_telegram": "",
+					"tag_tiktok": "",
 					"activa": true
 				}
 			}
@@ -369,17 +553,6 @@
 				}
 			},
 			{
-				"id": "col-papeleria",
-				"slug": "papeleria",
-				"status": "published",
-				"data": {
-					"title": "Papelería kawaii",
-					"descripcion": "Bolígrafos, washi tape, pegatinas y notas adhesivas kawaii para el cole o la oficina.",
-					"orden": 50,
-					"destacada": false
-				}
-			},
-			{
 				"id": "col-adultos",
 				"slug": "kawaii-para-adultos",
 				"status": "published",
@@ -405,14 +578,23 @@
 					"fuente_imagen": "propia",
 					"tipo": "oficial",
 					"edad_min": 6,
-					"colecciones": ["$ref:col-menos-10"],
+					"colecciones": [
+						"$ref:col-menos-10"
+					],
 					"destacado": false,
 					"para_grabar": true,
 					"notas": "Producto de ejemplo del seed."
 				},
 				"taxonomies": {
-					"personaje": ["kuromi"],
-					"marca": ["sanrio"]
+					"personaje": [
+						"kuromi"
+					],
+					"marca": [
+						"sanrio"
+					],
+					"categoria": [
+						"peluches"
+					]
 				}
 			},
 			{
@@ -428,10 +610,17 @@
 					"fuente_imagen": "propia",
 					"tipo": "generico",
 					"edad_min": 8,
-					"colecciones": ["$ref:col-menos-10", "$ref:col-papeleria"],
+					"colecciones": [
+						"$ref:col-menos-10"
+					],
 					"destacado": false,
 					"para_grabar": true,
 					"notas": "Producto de ejemplo del seed."
+				},
+				"taxonomies": {
+					"categoria": [
+						"papeleria"
+					]
 				}
 			},
 			{
@@ -447,14 +636,24 @@
 					"fuente_imagen": "marca",
 					"tipo": "oficial",
 					"edad_min": 15,
-					"colecciones": ["$ref:col-viral", "$ref:col-20-40"],
+					"colecciones": [
+						"$ref:col-viral",
+						"$ref:col-20-40"
+					],
 					"destacado": true,
 					"para_grabar": false,
 					"notas": "Producto de ejemplo del seed. Ojo con las falsificaciones: solo vendedor oficial de Pop Mart."
 				},
 				"taxonomies": {
-					"personaje": ["labubu"],
-					"marca": ["pop-mart"]
+					"personaje": [
+						"labubu"
+					],
+					"marca": [
+						"pop-mart"
+					],
+					"categoria": [
+						"cajas-sorpresa"
+					]
 				}
 			}
 		],
@@ -505,7 +704,11 @@
 							"_key": "s0",
 							"style": "normal",
 							"children": [
-								{ "_type": "span", "_key": "s1", "text": "Pendiente de redactar." }
+								{
+									"_type": "span",
+									"_key": "s1",
+									"text": "Pendiente de redactar."
+								}
 							]
 						}
 					]

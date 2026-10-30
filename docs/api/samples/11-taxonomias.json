@@ -1,0 +1,51 @@
+{
+    "success": true,
+    "data": {
+        "taxonomies": [
+            {
+                "id": "taxdef_category",
+                "name": "category",
+                "label": "Categories",
+                "labelSingular": "Category",
+                "hierarchical": true,
+                "collections": [],
+                "locale": "en",
+                "translationGroup": "taxdef_category"
+            },
+            {
+                "id": "taxdef_tag",
+                "name": "tag",
+                "label": "Tags",
+                "labelSingular": "Tag",
+                "hierarchical": false,
+                "collections": [],
+                "locale": "en",
+                "translationGroup": "taxdef_tag"
+            },
+            {
+                "id": "01M61R14WTGD1VYZ8H9R8PNGMC",
+                "name": "personaje",
+                "label": "Personajes",
+                "labelSingular": "Personaje",
+                "hierarchical": false,
+                "collections": [
+                    "productos"
+                ],
+                "locale": "es",
+                "translationGroup": "01M61R14WTGD1VYZ8H9R8PNGMC"
+            },
+            {
+                "id": "01M61R14WWJVR11NXH228CTA0H",
+                "name": "marca",
+                "label": "Marcas",
+                "labelSingular": "Marca",
+                "hierarchical": false,
+                "collections": [
+                    "productos"
+                ],
+                "locale": "es",
+                "translationGroup": "01M61R14WWJVR11NXH228CTA0H"
+            }
+        ]
+    }
+}

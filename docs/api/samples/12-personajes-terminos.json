@@ -1,0 +1,95 @@
+{
+    "success": true,
+    "data": {
+        "terms": [
+            {
+                "id": "01M61R19GK653QGMCAFK6W4D7M",
+                "name": "personaje",
+                "slug": "kuromi",
+                "label": "Kuromi",
+                "parentId": null,
+                "children": [],
+                "count": 1,
+                "locale": "es",
+                "translationGroup": "01M61R19GK653QGMCAFK6W4D7M"
+            },
+            {
+                "id": "01M61R19GN11RYSDH83VNEA0YY",
+                "name": "personaje",
+                "slug": "cinnamoroll",
+                "label": "Cinnamoroll",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GN11RYSDH83VNEA0YY"
+            },
+            {
+                "id": "01M61R19GQWXVFF6DQWW7V00FW",
+                "name": "personaje",
+                "slug": "my-melody",
+                "label": "My Melody",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GQWXVFF6DQWW7V00FW"
+            },
+            {
+                "id": "01M61R19GR08NYWJ5S7DQGDYJW",
+                "name": "personaje",
+                "slug": "hello-kitty",
+                "label": "Hello Kitty",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GR08NYWJ5S7DQGDYJW"
+            },
+            {
+                "id": "01M61R19GSNG7244Q13G32M0FQ",
+                "name": "personaje",
+                "slug": "pompompurin",
+                "label": "Pompompurin",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GSNG7244Q13G32M0FQ"
+            },
+            {
+                "id": "01M61R19GT7HVN61F25F0XCZWG",
+                "name": "personaje",
+                "slug": "sumikko-gurashi",
+                "label": "Sumikko Gurashi",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GT7HVN61F25F0XCZWG"
+            },
+            {
+                "id": "01M61R19GVW8YRCDSAQHTB1CQR",
+                "name": "personaje",
+                "slug": "pusheen",
+                "label": "Pusheen",
+                "parentId": null,
+                "children": [],
+                "count": 0,
+                "locale": "es",
+                "translationGroup": "01M61R19GVW8YRCDSAQHTB1CQR"
+            },
+            {
+                "id": "01M61R19GW28MADMX3G1C4AYDV",
+                "name": "personaje",
+                "slug": "labubu",
+                "label": "Labubu",
+                "parentId": null,
+                "children": [],
+                "count": 1,
+                "locale": "es",
+                "translationGroup": "01M61R19GW28MADMX3G1C4AYDV"
+            }
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "success": true,
+    "data": {
+        "children": [
+            {
+                "id": "01M61R19HPS906VXNFW97FAGEB",
+                "slug": "menos-de-10",
+                "collection": "colecciones",
+                "title": "Regalos kawaii por menos de 10 €",
+                "locale": "es",
+                "translationGroup": "01M61R19HPS906VXNFW97FAGEB",
+                "sortOrder": 0
+            }
+        ]
+    }
+}

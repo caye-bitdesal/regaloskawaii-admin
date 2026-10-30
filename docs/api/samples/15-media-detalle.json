@@ -1,0 +1,25 @@
+{
+    "success": true,
+    "data": {
+        "item": {
+            "id": "01M61R1VR9ZRN8WS980G2D410D",
+            "filename": "kuromi.jpg",
+            "mimeType": "image/jpeg",
+            "size": 10628,
+            "width": 800,
+            "height": 800,
+            "focalX": null,
+            "focalY": null,
+            "alt": "Llavero de peluche Kuromi",
+            "caption": null,
+            "storageKey": "01M61R1VM1F81G2DCEMBJDZEK6.jpg",
+            "contentHash": "sha1:8723a7e64ad899f9c6c34571dda5a78b7b18cf9a",
+            "blurhash": "L9TP_2~CfQ~C~CoLfQoLfQfQfQfQ",
+            "dominantColor": "rgb(255,190,204)",
+            "status": "ready",
+            "createdAt": "2026-10-28T17:13:47.529Z",
+            "authorId": "01M61R19SYH5TTE8QC3XA98RY0",
+            "folderId": null
+        }
+    }
+}

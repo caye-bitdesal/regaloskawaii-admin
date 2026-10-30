@@ -1,0 +1,35 @@
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": "tienda-amazon-es",
+                "type": "tiendas",
+                "slug": null,
+                "status": "published",
+                "data": {
+                    "title": "Amazon España",
+                    "plantilla_url": "https://www.amazon.es/dp/{id}?tag={tag}",
+                    "tag_web": "PENDIENTE-21",
+                    "tag_telegram": "PENDIENTE-21",
+                    "tag_tiktok": "PENDIENTE-21",
+                    "activa": 1
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.871Z",
+                "updatedAt": "2026-10-28T17:13:28.878Z",
+                "publishedAt": "2026-10-28T17:13:28.871Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R19HFK01FFMNJ1PCMCNX2",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "tienda-amazon-es",
+                "bylines": [],
+                "byline": null
+            }
+        ],
+        "total": 1
+    }
+}

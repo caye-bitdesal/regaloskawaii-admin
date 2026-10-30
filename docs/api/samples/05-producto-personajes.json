@@ -1,0 +1,20 @@
+{
+    "success": true,
+    "data": {
+        "terms": [
+            {
+                "id": "01M61R19GK653QGMCAFK6W4D7M",
+                "name": "personaje",
+                "slug": "kuromi",
+                "label": "Kuromi",
+                "parentId": null,
+                "locale": "es",
+                "translationGroup": "01M61R19GK653QGMCAFK6W4D7M"
+            }
+        ],
+        "unresolved": [],
+        "entryLocale": "es",
+        "defaultLocale": "en",
+        "implicitDefaultLocale": true
+    }
+}

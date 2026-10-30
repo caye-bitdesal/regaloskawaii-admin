@@ -1,0 +1,16 @@
+{
+    "success": true,
+    "data": {
+        "children": [
+            {
+                "id": "tienda-amazon-es",
+                "slug": null,
+                "collection": "tiendas",
+                "title": "Amazon España",
+                "locale": "es",
+                "translationGroup": "tienda-amazon-es",
+                "sortOrder": 0
+            }
+        ]
+    }
+}

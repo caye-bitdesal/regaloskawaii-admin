@@ -1,0 +1,153 @@
+{
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "id": "01M61R19MACE1WCK8M0G51MM79",
+                "type": "productos",
+                "slug": "ejemplo-labubu-caja-sorpresa",
+                "status": "published",
+                "data": {
+                    "title": "EJEMPLO – Labubu caja sorpresa",
+                    "resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+                    "id_externo": "B000000002",
+                    "precio_ref": 24.9,
+                    "fuente_imagen": "marca",
+                    "tipo": "oficial",
+                    "edad_min": 15,
+                    "destacado": 1,
+                    "para_grabar": 0,
+                    "notas": "Producto de ejemplo del seed. Ojo con las falsificaciones: solo vendedor oficial de Pop Mart."
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.970Z",
+                "updatedAt": "2026-10-28T17:13:39.445Z",
+                "publishedAt": "2026-10-28T17:13:39.445Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R1KVNYJMMKKZNF0MF5YJW",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19MACE1WCK8M0G51MM79",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19M3XH5SGGTHNAN6YGWC",
+                "type": "productos",
+                "slug": "ejemplo-set-washi-tape",
+                "status": "published",
+                "data": {
+                    "title": "EJEMPLO – Set de washi tape kawaii",
+                    "resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+                    "id_externo": "B000000001",
+                    "precio_ref": 7.5,
+                    "fuente_imagen": "propia",
+                    "tipo": "generico",
+                    "edad_min": 8,
+                    "destacado": 0,
+                    "para_grabar": 1,
+                    "notas": "Producto de ejemplo del seed."
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.964Z",
+                "updatedAt": "2026-10-28T17:13:39.494Z",
+                "publishedAt": "2026-10-28T17:13:39.494Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R1KX6RFXETRPZGAJDM5Q9",
+                "draftRevisionId": null,
+                "version": 2,
+                "locale": "es",
+                "translationGroup": "01M61R19M3XH5SGGTHNAN6YGWC",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            },
+            {
+                "id": "01M61R19KEXN3VFX3T9NSNMJ70",
+                "type": "productos",
+                "slug": "ejemplo-llavero-peluche-kuromi",
+                "status": "published",
+                "data": {
+                    "title": "EJEMPLO – Llavero de peluche Kuromi",
+                    "resumen": "Producto de prueba. Sustituir por uno real con su ASIN.",
+                    "descripcion": [
+                        {
+                            "_type": "block",
+                            "_key": "d0",
+                            "style": "normal",
+                            "children": [
+                                {
+                                    "_type": "span",
+                                    "_key": "d1",
+                                    "text": "Llavero suave de Kuromi, ideal para la mochila."
+                                }
+                            ]
+                        }
+                    ],
+                    "id_externo": "B000000000",
+                    "precio_ref": 9.99,
+                    "imagen": {
+                        "id": "01M61R1VR9ZRN8WS980G2D410D",
+                        "provider": "local",
+                        "filename": "kuromi.jpg",
+                        "mimeType": "image/jpeg",
+                        "width": 800,
+                        "height": 800,
+                        "blurhash": "L9TP_2~CfQ~C~CoLfQoLfQfQfQfQ",
+                        "dominantColor": "rgb(255,190,204)",
+                        "alt": "Llavero de peluche Kuromi",
+                        "meta": {
+                            "storageKey": "01M61R1VM1F81G2DCEMBJDZEK6.jpg",
+                            "caption": null,
+                            "blurhash": "L9TP_2~CfQ~C~CoLfQoLfQfQfQfQ",
+                            "dominantColor": "rgb(255,190,204)"
+                        }
+                    },
+                    "fuente_imagen": "propia",
+                    "tipo": "oficial",
+                    "edad_min": 6,
+                    "destacado": 0,
+                    "para_grabar": 1,
+                    "notas": "Producto de ejemplo del seed."
+                },
+                "authorId": null,
+                "primaryBylineId": null,
+                "createdAt": "2026-10-28T17:13:28.942Z",
+                "updatedAt": "2026-10-28T17:13:59.633Z",
+                "publishedAt": "2026-10-28T17:13:39.537Z",
+                "scheduledAt": null,
+                "liveRevisionId": "01M61R27G9CD09W1YVN6N1580Y",
+                "draftRevisionId": null,
+                "version": 4,
+                "locale": "es",
+                "translationGroup": "01M61R19KEXN3VFX3T9NSNMJ70",
+                "seo": {
+                    "title": null,
+                    "description": null,
+                    "image": null,
+                    "canonical": null,
+                    "noIndex": false
+                },
+                "bylines": [],
+                "byline": null
+            }
+        ],
+        "total": 3
+    }
+}

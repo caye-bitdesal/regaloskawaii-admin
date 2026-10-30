@@ -1,0 +1,20 @@
+{
+    "success": true,
+    "data": {
+        "terms": [
+            {
+                "id": "01M61R19GX50G4FR3SGTXY0ZJG",
+                "name": "marca",
+                "slug": "sanrio",
+                "label": "Sanrio",
+                "parentId": null,
+                "locale": "es",
+                "translationGroup": "01M61R19GX50G4FR3SGTXY0ZJG"
+            }
+        ],
+        "unresolved": [],
+        "entryLocale": "es",
+        "defaultLocale": "en",
+        "implicitDefaultLocale": true
+    }
+}
