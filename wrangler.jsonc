@@ -4,6 +4,12 @@
 	"main": "./src/worker.ts",
 	"compatibility_date": "2026-02-24",
 	"compatibility_flags": ["nodejs_compat"],
+	"routes": [
+		{ "pattern": "admin.regaloskawaii.es", "custom_domain": true },
+	],
+	"vars": {
+		"EMDASH_SITE_URL": "https://admin.regaloskawaii.es",
+	},
 	// No cambiar estos nombres: un nombre nuevo crea una base de datos / bucket vacíos.
 	"d1_databases": [
 		{
