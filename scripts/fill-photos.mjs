@@ -3,11 +3,17 @@
  * Pone foto a los productos que ya están en EmDash sin imagen (excepto Amazon, cuyas
  * fotos no se pueden alojar). Para cada uno busca, por este orden:
  *   1. images/<ID>.webp|jpg|jpeg|png|avif en tu carpeta (otra carpeta: --images=DIR)
- *   2. la foto principal de su página en AliExpress
+ *   2. otro EmDash donde ese producto ya tenga foto (--from=URL, p. ej. tu EmDash
+ *      local http://localhost:4321, con su token en EMDASH_FROM_TOKEN)
+ *   3. la foto principal de su página en AliExpress
  * Sube la foto, la asigna al producto y vuelve a publicar los que estaban publicados.
  *
  * Uso:
  *   EMDASH_TOKEN=ec_pat_… node scripts/fill-photos.mjs [--dry-run] [--no-web-photos]
+ *
+ * Copiar las fotos de tu EmDash local a producción:
+ *   EMDASH_FROM_TOKEN=<token local> EMDASH_URL=https://admin.regaloskawaii.es EMDASH_TOKEN=<token prod> \
+ *     node scripts/fill-photos.mjs --from=http://localhost:4321
  */
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -17,6 +23,12 @@ const args = process.argv.slice(2);
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
+const ORIGEN = args.find((a) => a.startsWith("--from="))?.slice(7)?.replace(/\/+$/, "") ?? null;
+const TOKEN_ORIGEN = process.env.EMDASH_FROM_TOKEN;
+if (ORIGEN && !TOKEN_ORIGEN) {
+	console.error("✗ Con --from hace falta EMDASH_FROM_TOKEN (el token de ese EmDash)");
+	process.exit(1);
+}
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const TOKEN = process.env.EMDASH_TOKEN;
 if (!TOKEN) {
@@ -83,7 +95,7 @@ async function fotoDeAliExpress(id) {
 
 async function leerImagen(ruta) {
 	if (!/^https?:\/\//i.test(ruta)) return { buffer: await readFile(ruta), tipo: MIME[extname(ruta).toLowerCase()], nombre: basename(ruta) };
-	const res = await fetch(ruta);
+	const res = await fetch(ruta, ORIGEN && ruta.startsWith(ORIGEN) ? { headers: { Authorization: `Bearer ${TOKEN_ORIGEN}` } } : {});
 	if (!res.ok) throw new Error(`no se pudo descargar ${ruta} (HTTP ${res.status})`);
 	const tipo = (res.headers.get("content-type") ?? "").split(";")[0].trim();
 	if (!Object.values(MIME).includes(tipo)) throw new Error(`${ruta} no es una imagen admitida (${tipo || "tipo desconocido"})`);
@@ -110,6 +122,28 @@ async function subirImagen(ruta, alt) {
 	};
 }
 
+/** Fotos del EmDash de origen, por ID de producto: id_externo → URL de descarga. */
+const fotosOrigen = new Map();
+if (ORIGEN) {
+	let cursor;
+	do {
+		const q = new URLSearchParams({ limit: "100", status: "all" });
+		if (cursor) q.set("cursor", cursor);
+		const res = await fetch(`${ORIGEN}/_emdash/api/content/productos?${q}`, { headers: { Authorization: `Bearer ${TOKEN_ORIGEN}` } });
+		const json = await res.json().catch(() => ({}));
+		if (!json.success) {
+			console.error(`✗ No se pudo leer ${ORIGEN}: ${json.error?.message ?? `HTTP ${res.status}`}`);
+			process.exit(1);
+		}
+		for (const p of json.data.items) {
+			const clave = p.data.imagen?.meta?.storageKey;
+			if (p.data.id_externo && clave) fotosOrigen.set(String(p.data.id_externo).toLowerCase(), `${ORIGEN}/_emdash/api/media/file/${clave}`);
+		}
+		cursor = json.data.nextCursor;
+	} while (cursor);
+	console.log(`Fotos disponibles en ${ORIGEN}: ${fotosOrigen.size}`);
+}
+
 const tiendas = await paginas("/content/tiendas?status=all", "items");
 let puestas = 0;
 let sinFoto = 0;
@@ -121,7 +155,7 @@ for (const t of tiendas) {
 		const { item } = await api(`/content/productos/${ref.id}`);
 		const id = item.data.id_externo;
 		if (item.data.imagen || !id) continue;
-		let ruta = fotoLocal(id);
+		let ruta = fotoLocal(id) ?? fotosOrigen.get(String(id).toLowerCase()) ?? null;
 		if (!ruta && esAli && FOTOS_WEB) {
 			ruta = await fotoDeAliExpress(id);
 			await esperar(1000);

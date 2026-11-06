@@ -3,9 +3,14 @@
 	"name": "regaloskawaii-admin",
 	"main": "./src/worker.ts",
 	"compatibility_date": "2026-02-24",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"routes": [
-		{ "pattern": "admin.regaloskawaii.es", "custom_domain": true },
+		{
+			"pattern": "admin.regaloskawaii.es",
+			"custom_domain": true
+		},
 	],
 	"vars": {
 		"EMDASH_SITE_URL": "https://admin.regaloskawaii.es",
@@ -15,6 +20,7 @@
 		{
 			"binding": "DB",
 			"database_name": "regaloskawaii",
+			"database_id": "2e0c8267-d652-4fec-8a0d-ab8e49a14734",
 		},
 	],
 	"r2_buckets": [
@@ -22,11 +28,17 @@
 			"binding": "MEDIA",
 			"bucket_name": "regaloskawaii-media",
 		},
+		{
+			"bucket_name": "regaloskawaii-media",
+			"binding": "regaloskawaii_media"
+		},
 	],
 	// Plugins aislados: solo en Workers Paid. Se deja desactivado (plan gratuito).
 	// "worker_loaders": [{ "binding": "LOADER" }],
 	// Cron de mantenimiento cada 15 min (debe coincidir con generalCron en src/worker.ts)
 	"triggers": {
-		"crons": ["*/15 * * * *"],
+		"crons": [
+			"*/15 * * * *"
+		],
 	},
 }

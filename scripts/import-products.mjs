@@ -260,8 +260,11 @@ function preparar(p, i, ctx) {
 		imagen = buscarImagenPorId(idExterno);
 	}
 	if (imagen && !esUrl(imagen)) {
-		if (!existsSync(imagen)) errores.push(`${pos}: no existe la imagen ${imagen}`);
-		else if (!MIME[extname(imagen).toLowerCase()]) errores.push(`${pos}: formato de imagen no admitido (${basename(imagen)})`);
+		if (!existsSync(imagen)) {
+			// No bloquea: se crea sin esa foto (o con la de AliExpress) y se puede poner luego con fill-photos.
+			console.log(`  ! ${pos}: no existe la imagen ${imagen}; se buscará otra o se creará sin foto`);
+			imagen = null;
+		} else if (!MIME[extname(imagen).toLowerCase()]) errores.push(`${pos}: formato de imagen no admitido (${basename(imagen)})`);
 	}
 
 	const tipo = p.tipo ?? "generico";
