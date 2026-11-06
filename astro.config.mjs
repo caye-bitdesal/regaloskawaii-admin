@@ -7,6 +7,12 @@ import emdash from "emdash/astro";
 export default defineConfig({
 	output: "server",
 	adapter: cloudflare(),
+	// Un solo idioma: español. EmDash usa este locale para el contenido, las
+	// taxonomías y la API (sin prefijo /es/ en las URLs).
+	i18n: {
+		defaultLocale: "es",
+		locales: ["es"],
+	},
 	image: {
 		layout: "constrained",
 		responsiveStyles: true,

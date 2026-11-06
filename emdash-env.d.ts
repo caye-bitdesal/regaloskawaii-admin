@@ -3,7 +3,7 @@
 
 /// <reference types="emdash/locals" />
 
-import type { BylineSummary, ContentBylineCredit, TaxonomyTerm, PortableTextBlock, ReferencePage } from "emdash";
+import type { ContentBylineCredit, TaxonomyTerm, PortableTextBlock } from "emdash";
 
 export interface Producto {
   id: string;
@@ -12,22 +12,23 @@ export interface Producto {
   title: string;
   resumen?: string;
   descripcion?: PortableTextBlock[];
+  tienda: string;
   id_externo: string;
   precio_ref?: number;
   enlace_afiliado?: string;
   precio_actualizado?: string;
-  imagen?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
-  galeria?: { "imagen": { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } }[];
+  imagen?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  galeria?: { "imagen": { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } } }[];
   fuente_imagen?: "propia" | "marca";
   tipo: "oficial" | "generico";
   edad_min?: number;
+  colecciones?: string;
   destacado?: boolean;
   para_grabar?: boolean;
   notas?: string;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
-  byline?: BylineSummary | null;
   bylines?: ContentBylineCredit[];
   terms?: Record<string, TaxonomyTerm[]>;
 }
@@ -38,13 +39,12 @@ export interface Coleccione {
   status: string;
   title: string;
   descripcion?: string;
-  imagen?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; caption?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; focalX?: number; focalY?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
+  imagen?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown>; darkVariant?: { id: string; src?: string; alt?: string; width?: number; height?: number; filename?: string; mimeType?: string; blurhash?: string; dominantColor?: string; provider?: string; previewUrl?: string; meta?: Record<string, unknown> } };
   orden?: number;
   destacada?: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
-  byline?: BylineSummary | null;
   bylines?: ContentBylineCredit[];
   terms?: Record<string, TaxonomyTerm[]>;
 }
@@ -62,7 +62,6 @@ export interface Tienda {
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
-  byline?: BylineSummary | null;
   bylines?: ContentBylineCredit[];
   terms?: Record<string, TaxonomyTerm[]>;
 }
@@ -76,14 +75,8 @@ export interface Page {
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
-  byline?: BylineSummary | null;
   bylines?: ContentBylineCredit[];
   terms?: Record<string, TaxonomyTerm[]>;
-}
-
-export interface ProductoReferences {
-  tienda: ReferencePage<Tienda>;
-  colecciones: ReferencePage<Coleccione>;
 }
 
 declare module "emdash" {
@@ -92,8 +85,5 @@ declare module "emdash" {
     colecciones: Coleccione;
     tiendas: Tienda;
     pages: Page;
-  }
-  interface EmDashCollectionReferences {
-    productos: ProductoReferences;
   }
 }
