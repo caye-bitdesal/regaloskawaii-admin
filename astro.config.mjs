@@ -3,6 +3,7 @@ import react from "@astrojs/react";
 import { d1, r2 } from "@emdash-cms/cloudflare";
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
+import { notifyGithub } from "./src/plugins/notify-github/index.ts";
 
 export default defineConfig({
 	output: "server",
@@ -22,6 +23,9 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto", coalesce: true }),
 			storage: r2({ binding: "MEDIA" }),
+			// Avisa a GitHub para reconstruir la web al publicar, despublicar o borrar.
+			// Se configura en el panel: Plugins → notify-github → Settings.
+			plugins: [notifyGithub()],
 		}),
 	],
 	devToolbar: { enabled: false },
