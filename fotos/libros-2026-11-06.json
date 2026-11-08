@@ -1,0 +1,14 @@
+{
+  "_comentario": "Portadas de libros (servicio de imágenes de CEGAL, el que usan las librerías españolas). Clave = ASIN/ISBN-10 del producto. Uso: node scripts/fill-photos.mjs --photos=fotos/libros-2026-11-06.json",
+  "8410095998": "https://static.cegal.es/imagenes/marcadas/9788410/978841009599.gif",
+  "8893672936": "https://static.cegal.es/imagenes/marcadas/9788893/978889367293.gif",
+  "8427256264": "https://static.cegal.es/imagenes/marcadas/9788427/978842725626.gif",
+  "8410427109": "https://static.cegal.es/imagenes/marcadas/9788410/978841042710.gif",
+  "8491789030": "https://static.cegal.es/imagenes/marcadas/9788491/978849178903.gif",
+  "8411962598": "https://static.cegal.es/imagenes/marcadas/9788411/978841196259.gif",
+  "9878206793": "https://static.cegal.es/imagenes/marcadas/9789878/978987820679.gif",
+  "8428571597": "https://static.cegal.es/imagenes/marcadas/9788428/978842857159.gif",
+  "8468377562": "https://static.cegal.es/imagenes/marcadas/9788468/978846837756.gif",
+  "8467797991": "https://static.cegal.es/imagenes/marcadas/9788467/978846779799.gif",
+  "841042715X": "https://static.cegal.es/imagenes/marcadas/9788410/978841042715.gif"
+}

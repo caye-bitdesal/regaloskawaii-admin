@@ -1,6 +1,7 @@
 # Imports the product JSON files pushed to datos/ into the production EmDash.
 #
-# Runs on every push that adds or changes a .json in datos/, or manually from
+# Runs on every push that adds or changes a .json in datos/ (products with a photo are
+# published, the rest stay as drafts), or manually from
 # GitHub → Actions → "Import products" → Run workflow.
 #
 # Setup (GitHub → Settings → Secrets and variables → Actions):
@@ -19,9 +20,9 @@ on:
         description: "JSON file to import (repo path, e.g. datos/top-kawaii-31-10.json)"
         required: true
       publish:
-        description: "Publish right away (otherwise products are created as drafts)"
+        description: "Publish the products that have a photo (the rest stay as drafts)"
         type: boolean
-        default: false
+        default: true
 
 concurrency:
   group: import-products
@@ -58,7 +59,7 @@ jobs:
         run: |
           for f in ${{ steps.files.outputs.list }}; do
             echo "::group::$f"
-            node scripts/importar-productos.mjs "$f" --simular
+            node scripts/import-products.mjs "$f" --dry-run
             echo "::endgroup::"
           done
 
@@ -67,11 +68,16 @@ jobs:
         run: |
           for f in ${{ steps.files.outputs.list }}; do
             echo "::group::$f"
-            node scripts/importar-productos.mjs "$f" ${{ inputs.publish && '--publicar' || '' }}
+            node scripts/import-products.mjs "$f" ${{ (github.event_name == 'push' || inputs.publish) && '--publish' || '' }}
             echo "::endgroup::"
           done
 
       - name: Fill in missing photos
         if: steps.files.outputs.list != ''
         continue-on-error: true
-        run: node scripts/rellenar-fotos.mjs
+        run: node scripts/fill-photos.mjs
+
+      # Only products with a photo are shown on the website.
+      - name: Unpublish products without a photo
+        if: steps.files.outputs.list != ''
+        run: node scripts/unpublish-without-photo.mjs

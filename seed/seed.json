@@ -322,7 +322,7 @@
 			"name": "categoria",
 			"label": "Categorías",
 			"labelSingular": "Categoría",
-			"hierarchical": false,
+			"hierarchical": true,
 			"collections": [
 				"productos"
 			],
@@ -366,6 +366,99 @@
 				{
 					"slug": "maquillaje",
 					"label": "Maquillaje"
+				},
+				{
+					"slug": "hogar-cocina",
+					"label": "Hogar y cocina"
+				},
+				{
+					"slug": "accesorios",
+					"label": "Accesorios"
+				},
+				{
+					"slug": "sudaderas",
+					"label": "Sudaderas",
+					"parent": "moda"
+				},
+				{
+					"slug": "camisetas",
+					"label": "Camisetas",
+					"parent": "moda"
+				},
+				{
+					"slug": "faldas",
+					"label": "Faldas",
+					"parent": "moda"
+				},
+				{
+					"slug": "pijamas-kigurumis",
+					"label": "Pijamas y kigurumis",
+					"parent": "moda"
+				},
+				{
+					"slug": "squishy-comida",
+					"label": "Squishy de comida",
+					"parent": "squishy"
+				},
+				{
+					"slug": "squishy-animales",
+					"label": "Squishy de animales",
+					"parent": "squishy"
+				},
+				{
+					"slug": "squishy-gigantes",
+					"label": "Squishy gigantes",
+					"parent": "squishy"
+				},
+				{
+					"slug": "pegatinas",
+					"label": "Pegatinas",
+					"parent": "papeleria"
+				},
+				{
+					"slug": "boligrafos",
+					"label": "Bolígrafos",
+					"parent": "papeleria"
+				},
+				{
+					"slug": "libretas",
+					"label": "Libretas y agendas",
+					"parent": "papeleria"
+				},
+				{
+					"slug": "libros",
+					"label": "Libros",
+					"parent": "papeleria"
+				},
+				{
+					"slug": "tazas",
+					"label": "Tazas",
+					"parent": "hogar-cocina"
+				},
+				{
+					"slug": "botellas",
+					"label": "Botellas y termos",
+					"parent": "hogar-cocina"
+				},
+				{
+					"slug": "lamparas",
+					"label": "Lámparas",
+					"parent": "hogar-cocina"
+				},
+				{
+					"slug": "mochilas",
+					"label": "Mochilas y bolsos",
+					"parent": "accesorios"
+				},
+				{
+					"slug": "llaveros",
+					"label": "Llaveros",
+					"parent": "accesorios"
+				},
+				{
+					"slug": "auriculares",
+					"label": "Auriculares",
+					"parent": "accesorios"
 				}
 			]
 		},

@@ -6,6 +6,11 @@
  *   2. otro EmDash donde ese producto ya tenga foto (--from=URL, p. ej. tu EmDash
  *      local http://localhost:4321, con su token en EMDASH_FROM_TOKEN)
  *   3. la foto principal de su página en AliExpress
+ *
+ * Con --photos=fichero.json se usan antes que nada las URLs de ese fichero
+ * ({ "ID": "https://…" } o { "ID": ["https://…", "https://…"] }, se prueban en orden).
+ * Es la única fuente que se aplica también a productos de Amazon, y nunca acepta
+ * fotos alojadas en Amazon.
  * Sube la foto, la asigna al producto y vuelve a publicar los que estaban publicados.
  *
  * Uso:
@@ -23,6 +28,7 @@ const args = process.argv.slice(2);
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
+const FICHERO_FOTOS = args.find((a) => a.startsWith("--photos="))?.slice(9) ?? null;
 const ORIGEN = args.find((a) => a.startsWith("--from="))?.slice(7)?.replace(/\/+$/, "") ?? null;
 const TOKEN_ORIGEN = process.env.EMDASH_FROM_TOKEN;
 if (ORIGEN && !TOKEN_ORIGEN) {
@@ -122,6 +128,22 @@ async function subirImagen(ruta, alt) {
 	};
 }
 
+const esDeAmazon = (url) => /(^|\.)(amazon\.[a-z.]+|media-amazon\.com|ssl-images-amazon\.com|amazon-adsystem\.com)$/i.test(new URL(url).hostname);
+
+/** Fotos indicadas a mano: id → [urls]. */
+const fotosFichero = new Map();
+if (FICHERO_FOTOS) {
+	const datos = JSON.parse(await readFile(resolve(FICHERO_FOTOS), "utf8"));
+	for (const [id, v] of Object.entries(datos)) {
+		if (id.startsWith("_")) continue; // claves de comentario
+		const urls = (Array.isArray(v) ? v : [v]).filter((u) => typeof u === "string" && /^https?:\/\//i.test(u));
+		const buenas = urls.filter((u) => !esDeAmazon(u));
+		if (buenas.length < urls.length) console.log(`  ! ${id}: se ignoran las fotos alojadas en Amazon`);
+		if (buenas.length) fotosFichero.set(id.toLowerCase(), buenas);
+	}
+	console.log(`Fotos en ${FICHERO_FOTOS}: ${fotosFichero.size}`);
+}
+
 /** Fotos del EmDash de origen, por ID de producto: id_externo → URL de descarga. */
 const fotosOrigen = new Map();
 if (ORIGEN) {
@@ -149,22 +171,31 @@ let puestas = 0;
 let sinFoto = 0;
 for (const t of tiendas) {
 	const plantilla = t.data.plantilla_url ?? "";
-	if (/amazon\./i.test(plantilla)) continue;
+	const esAmazon = /amazon\./i.test(plantilla);
+	if (esAmazon && !fotosFichero.size) continue; // a Amazon solo se le ponen fotos del fichero --photos
 	const esAli = /aliexpress\./i.test(plantilla);
 	for (const ref of await paginas(`/content/tiendas/${t.id}/references/productos_tienda/parents`, "parents")) {
 		const { item } = await api(`/content/productos/${ref.id}`);
 		const id = item.data.id_externo;
 		if (item.data.imagen || !id) continue;
-		let ruta = fotoLocal(id) ?? fotosOrigen.get(String(id).toLowerCase()) ?? null;
-		if (!ruta && esAli && FOTOS_WEB) {
-			ruta = await fotoDeAliExpress(id);
-			await esperar(1000);
+		const candidatas = [...(fotosFichero.get(String(id).toLowerCase()) ?? [])];
+		if (!esAmazon) {
+			const otra = fotoLocal(id) ?? fotosOrigen.get(String(id).toLowerCase());
+			if (otra) candidatas.push(otra);
 		}
-		if (!ruta) {
-			console.log(`  ! «${item.data.title}»: no se encontró foto`);
-			sinFoto++;
+		if (!candidatas.length && esAli && FOTOS_WEB) {
+			const web = await fotoDeAliExpress(id);
+			await esperar(1000);
+			if (web) candidatas.push(web);
+		}
+		if (!candidatas.length) {
+			if (!esAmazon) {
+				console.log(`  ! «${item.data.title}»: no se encontró foto`);
+				sinFoto++;
+			}
 			continue;
 		}
+		let ruta = candidatas[0];
 		if (SIMULAR) {
 			console.log(`• «${item.data.title}» ← ${ruta}`);
 			puestas++;
@@ -172,7 +203,17 @@ for (const t of tiendas) {
 		}
 		let media;
 		try {
-			media = await subirImagen(ruta, item.data.title);
+			let ultimoError;
+			for (const c of candidatas) {
+				try {
+					media = await subirImagen(c, item.data.title);
+					ruta = c;
+					break;
+				} catch (e) {
+					ultimoError = e;
+				}
+			}
+			if (!media) throw ultimoError;
 			await api(`/content/productos/${item.id}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },

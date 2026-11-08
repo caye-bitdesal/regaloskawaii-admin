@@ -11,7 +11,8 @@
  *   EMDASH_LOCALE Idioma del contenido (por defecto es)
  *
  * Opciones:
- *   --publish    Publica cada producto al crearlo (por defecto se crean como borrador)
+ *   --publish    Publica cada producto al crearlo (por defecto se crean como borrador).
+ *                 Los que se quedan sin foto se crean en borrador igualmente.
  *   --dry-run     No crea nada: valida el fichero y muestra lo que haría
  *   --images=DIR Carpeta donde buscar la foto de cada producto por su ID
  *                 (p. ej. images/1005007345370415.webp). Por defecto: images/
@@ -32,6 +33,8 @@ const fichero = args.find((a) => !a.startsWith("--"));
 const PUBLICAR = args.includes("--publish");
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
+const QUITAR_FONDO = args.includes("--remove-bg");
+let sinFotoEnBorrador = 0;
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const LOCALE = process.env.EMDASH_LOCALE ?? "es";
@@ -203,8 +206,22 @@ async function leerImagen(ruta) {
 	return { buffer: Buffer.from(await res.arrayBuffer()), tipo, nombre: `${basename(new URL(ruta).pathname, extname(new URL(ruta).pathname))}${ext}` };
 }
 
-async function subirImagen(ruta, alt) {
-	const { buffer, tipo, nombre } = await leerImagen(ruta);
+/** Con --remove-bg: quita el fondo con IA y sube un WebP transparente. Si falla, sube la original. */
+async function prepararFoto(buffer, tipo, nombre, esAmazon = false) {
+	if (!QUITAR_FONDO || esAmazon) return { buffer, tipo, nombre };
+	try {
+		const { quitarFondo } = await import("./lib/remove-background.mjs");
+		const salida = await quitarFondo(buffer);
+		return { buffer: salida, tipo: "image/webp", nombre: `${nombre.replace(/\.[a-z0-9]+$/i, "")}-sinfondo.webp` };
+	} catch (e) {
+		console.log(`  ! no se pudo quitar el fondo de ${nombre}: ${e.message}; se sube la original`);
+		return { buffer, tipo, nombre };
+	}
+}
+
+async function subirImagen(ruta, alt, esAmazon = false) {
+	const leida = await leerImagen(ruta);
+	const { buffer, tipo, nombre } = await prepararFoto(leida.buffer, leida.tipo, leida.nombre, esAmazon);
 	if (!tipo) throw new Error(`formato de imagen no admitido: ${ruta}`);
 	const form = new FormData();
 	form.append("file", new Blob([buffer], { type: tipo }), nombre);
@@ -351,8 +368,10 @@ const [esquema, tiendas, colecciones, existentes, categorias, personajes, marcas
 	api("/taxonomies/marca/terms"),
 ]);
 // término → slug, buscando por slug o por nombre visible
+// Las taxonomías jerárquicas (categoria) llegan como árbol: se recorren también los hijos.
+const aplanar = (terms) => terms.flatMap((t) => [t, ...aplanar(t.children ?? [])]);
 const indiceTerminos = ({ terms }) =>
-	new Map(terms.flatMap((t) => [[clave(t.slug), t.slug], [clave(t.label), t.slug]]));
+	new Map(aplanar(terms).flatMap((t) => [[clave(t.slug), t.slug], [clave(t.label), t.slug]]));
 
 // Tienda de cada producto existente (para detectar duplicados)
 const tiendaDe = new Map();
@@ -454,8 +473,11 @@ for (const p of nuevos) {
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(p.cuerpo),
 		});
-		if (PUBLICAR) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
-		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : ""}${PUBLICAR ? " (publicado)" : " (borrador)"}`);
+		// En la web solo salen productos con foto: sin foto se queda en borrador aunque se pida --publish.
+		const publicar = PUBLICAR && Boolean(p.imagen);
+		if (publicar) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
+		else if (PUBLICAR) sinFotoEnBorrador++;
+		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : ""}${publicar ? " (publicado)" : PUBLICAR ? " (borrador: no tiene foto)" : " (borrador)"}`);
 		creados++;
 	} catch (e) {
 		// Si la foto se subió pero el producto no se creó, se borra para no dejarla huérfana.
@@ -467,5 +489,6 @@ for (const p of nuevos) {
 
 console.log(
 	`\n${SIMULAR ? "Nuevos (se crearían)" : "Nuevos creados"}: ${creados} · Ya existían: ${cuenta.existe}` +
-		` · En la papelera: ${cuenta.papelera} · Repetidos en el fichero: ${cuenta.repetido}`,
+		` · En la papelera: ${cuenta.papelera} · Repetidos en el fichero: ${cuenta.repetido}` +
+		(sinFotoEnBorrador ? ` · En borrador por no tener foto: ${sinFotoEnBorrador}` : ""),
 );

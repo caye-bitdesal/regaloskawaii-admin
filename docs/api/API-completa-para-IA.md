@@ -129,14 +129,14 @@ Para montar los datos al construir (eficiente):
 
 Hay dos formas de agrupar productos, y la web debe mantenerlas separadas:
 
-- **Categorías** (taxonomía `categoria`): qué tipo de producto es. Términos: abrigos, moda, peluches, cosplay, gaming, cajas-sorpresa, squishy, papeleria, joyeria, maquillaje. Lista: `GET /_emdash/api/taxonomies/categoria/terms` (con `count`). Categorías de un producto: `GET /_emdash/api/content/productos/{id}/terms/categoria`.
+- **Categorías** (taxonomía `categoria`, **jerárquica**): qué tipo de producto es. Primer nivel: abrigos, moda, peluches, cosplay, gaming, cajas-sorpresa, squishy, papeleria, joyeria, maquillaje, hogar-cocina, accesorios; varias tienen subcategorías (lista en `seed/seed.json`). `GET …/taxonomies/categoria/terms` devuelve un **árbol**: cada término trae `children` (y `parentId`); hay que recorrerlo entero. Un producto de una subcategoría cuenta también en sus categorías padre. Lista: `GET /_emdash/api/taxonomies/categoria/terms` (con `count`). Categorías de un producto: `GET /_emdash/api/content/productos/{id}/terms/categoria`.
 - **Colecciones** (colección `colecciones`): selecciones hechas a mano: por precio (menos-de-10, de-10-a-20, de-20-a-40) y temáticas (lo-mas-viral, kawaii-para-adultos). Ordenar por `data.orden`.
 
 Páginas:
 
 1. **Home** (`/`): un selector con dos pestañas, «Por categoría» y «Por colección». Cada pestaña muestra tarjetas de sus grupos (nombre + nº de productos). La pestaña activa puede cambiarse sin recargar (`?ver=colecciones`).
-2. **Categorías** (`/categorias`): solo la lista de categorías, sin colecciones. No mostrar categorías con `count` 0.
-3. **Una categoría** (`/categoria/{slug}`): los productos de esa categoría, con una fila de filtros por colección («Todas», «Menos de 10 €», «Lo más viral»…). Mostrar solo las colecciones que tengan algún producto en esa categoría. El filtro se aplica en el navegador sobre los productos ya cargados, y se refleja en la URL (`/categoria/peluches?coleccion=menos-de-10`) para poder compartirla.
+2. **Categorías** (`/categorias`): solo las categorías de primer nivel, sin colecciones. No mostrar las que no tengan productos (contando los de sus subcategorías).
+3. **Una categoría** (`/categoria/{slug}`, también para subcategorías): los productos de esa categoría y de sus subcategorías; si tiene subcategorías, una fila de enlaces a ellas (en una subcategoría, a sus hermanas y un enlace de vuelta al padre); además, una fila de filtros por colección («Todas», «Menos de 10 €», «Lo más viral»…). Mostrar solo las colecciones que tengan algún producto en esa categoría. El filtro se aplica en el navegador sobre los productos ya cargados, y se refleja en la URL (`/categoria/peluches?coleccion=menos-de-10`) para poder compartirla.
 4. **Una colección** (`/coleccion/{slug}`): sus productos (sin filtro adicional).
 
 Cómo montarlo en el build (la web es estática): descargar una vez todos los productos publicados, sus categorías y sus colecciones (`…/references/colecciones/children`), y generar a partir de ahí todas las páginas. Cada tarjeta de producto lleva en un atributo `data-colecciones` sus slugs de colección, para que el filtro funcione sin llamadas a la API.

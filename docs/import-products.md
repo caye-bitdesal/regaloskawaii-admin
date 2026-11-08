@@ -41,7 +41,7 @@ Una lista de productos (ver `docs/ejemplo-productos.json`):
 | `resumen` | No | 1–2 frases para la tarjeta (máx. 200 caracteres) |
 | `descripcion` | No | Texto largo; los párrafos se separan con una línea en blanco (`\n\n`) |
 | `colecciones` | No | Slugs: `menos-de-10`, `de-10-a-20`, `de-20-a-40`, `lo-mas-viral`, `kawaii-para-adultos` |
-| `categorias` | No | Slugs o nombres: `abrigos`, `moda`, `peluches`, `cosplay`, `gaming`, `cajas-sorpresa`, `squishy`, `papeleria`, `joyeria`, `maquillaje` |
+| `categorias` | No | Slugs o nombres. Primer nivel: `abrigos`, `moda`, `peluches`, `cosplay`, `gaming`, `cajas-sorpresa`, `squishy`, `papeleria`, `joyeria`, `maquillaje`, `hogar-cocina`, `accesorios`. Subcategorías (mejor la más concreta: el producto sale también en su categoría padre): moda › `sudaderas`, `camisetas`, `faldas`, `pijamas-kigurumis`; squishy › `squishy-comida`, `squishy-animales`, `squishy-gigantes`; papeleria › `pegatinas`, `boligrafos`, `libretas`, `libros`; hogar-cocina › `tazas`, `botellas`, `lamparas`; accesorios › `mochilas`, `llaveros`, `auriculares` |
 | `personajes` / `marcas` | No | Nombres o slugs de términos que ya existan en el panel (Kuromi, Sanrio…) |
 | `imagen` | No | Ruta a la foto, relativa al JSON (jpg, png, webp, avif). Si no la pones, se busca `images/<ID>.*`. No se admite en productos de Amazon |
 | `fuente_imagen` | No | `propia` o `marca` (si hay imagen, por defecto `propia`) |
@@ -107,6 +107,17 @@ Los scripts no se ejecutan «dentro» de Cloudflare: son clientes de la API, as�
 
 También se puede lanzar a mano: Actions → «Import products» → Run workflow, con la ruta del fichero (`file`) y la opción de publicar directamente (`publish`).
 
+### Fotos sin fondo (IA)
+
+Para que todas las fichas tengan el mismo estilo (producto recortado sobre fondo transparente):
+
+- Al importar o poner fotos: añade `--remove-bg` a `npm run import` o a `node scripts/fill-photos.mjs`.
+- Para las que ya están subidas: `node scripts/remove-backgrounds.mjs --dry-run` y luego sin `--dry-run` (`--limit=5` para probar con pocas).
+
+Usa el modelo ISNet (licencia Apache-2.0) en tu ordenador: gratis y sin enviar las fotos a ningún servicio. La primera vez descarga el modelo (~170 MB) en `~/.cache/regaloskawaii/`. Con `REMOVE_BG_MODEL=u2netp` usa uno de 5 MB, más rápido y algo peor. Necesita `npm install -D onnxruntime-node sharp`.
+
+Nunca se aplica a productos de Amazon (sus fotos no se pueden alojar ni modificar). Si un recorte sale mal, el script lo marca con «← revisar» y la foto original sigue en Medios.
+
 ## 3. Salida
 
 ```
@@ -131,3 +142,19 @@ Si algo está mal, no se crea nada:
 - Si un producto falla al crearse, su foto se borra para no dejar imágenes huérfanas.
 - **Personajes y marcas** tienen que existir antes en el panel (Taxonomías). El script te dice cuáles faltan.
 - Probado el 29/10/2026 con EmDash 1.3.1: crea el producto con su tienda, colecciones, personajes, imagen e idioma `es`, y detecta duplicados en una segunda ejecución.
+
+## Categorías y subcategorías
+
+«Categorías» es jerárquica: la lista completa está en `seed/seed.json`. Para poner al día una base
+de datos que ya existe (local o producción) después de cambiar el seed:
+
+```bash
+node scripts/update-categories.mjs --dry-run   # qué crearía y qué subcategoría daría a cada producto
+node scripts/update-categories.mjs --assign    # lo hace
+```
+
+- Crea las categorías que falten y coloca cada subcategoría bajo su padre.
+- Con `--assign` da subcategoría a los productos según su título (taza → Tazas, llavero → Llaveros,
+  libros por su ISBN…). No quita ninguna categoría y se salta los que ya tienen subcategoría.
+- Asignar categorías no avisa a GitHub: lanza «Build and deploy» a mano para verlo en la web.
+- Token con `content:read`, `content:write` y `taxonomies:manage`.
