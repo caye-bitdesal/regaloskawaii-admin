@@ -5,8 +5,7 @@
     "precio": 7.12,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Mimikyu"
@@ -15,7 +14,10 @@
       "Pokémon"
     ],
     "imagen": "images/1005006904443818.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "Bloques de construcción Sanrio (99 modelos)",
@@ -23,9 +25,7 @@
     "precio": 1.4,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -37,7 +37,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256805803033014.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "accesorios"
+    ]
   },
   {
     "nombre": "Peluches Pikachu y otros Pokémon",
@@ -45,9 +48,7 @@
     "precio": 4.93,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Pikachu"
@@ -56,7 +57,10 @@
       "Pokémon"
     ],
     "imagen": "images/3256805990021419.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "Peluche Stitch 18 cm con colgante",
@@ -64,9 +68,7 @@
     "precio": 3.4,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Stitch"
@@ -75,7 +77,10 @@
       "Disney"
     ],
     "imagen": "images/1005007169878462.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "Llavero peluche Osos Amorosos con sonido",
@@ -83,9 +88,7 @@
     "precio": 4.84,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Osos Amorosos"
@@ -94,7 +97,10 @@
       "Care Bears"
     ],
     "imagen": "images/1005010285393870.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "llaveros"
+    ]
   },
   {
     "nombre": "Llavero peluche Domo-kun",
@@ -102,9 +108,7 @@
     "precio": 4.35,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Domo-kun"
@@ -113,7 +117,10 @@
       "Domo"
     ],
     "imagen": "images/1005010285537331.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "llaveros"
+    ]
   },
   {
     "nombre": "Peluche Gengar 24 cm",
@@ -121,9 +128,7 @@
     "precio": 4.84,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Gengar"
@@ -132,7 +137,10 @@
       "Pokémon"
     ],
     "imagen": "images/1005008798729624.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "Toalla de mano colgante Hello Kitty y My Melody",
@@ -140,9 +148,7 @@
     "precio": 4.95,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -152,7 +158,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005010653457362.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "hogar-cocina"
+    ]
   },
   {
     "nombre": "Tijeras Hello Kitty",
@@ -160,8 +169,7 @@
     "precio": 6.06,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -170,7 +178,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005011822825686.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Ramo de peluches Hello Kitty, Kuromi, My Melody y Cinnamoroll",
@@ -178,7 +189,7 @@
     "precio": 11.18,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-20"
+      "de-10-a-20"
     ],
     "personajes": [
       "Hello Kitty",
@@ -190,7 +201,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256806194627007.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "3 bolígrafos de gel borrables Sanrio",
@@ -207,7 +221,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005010706902287.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "boligrafos"
+    ]
   },
   {
     "nombre": "Cojín peluche Kuromi fresa 25 cm",
@@ -215,9 +232,7 @@
     "precio": 2.09,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Kuromi",
@@ -227,7 +242,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005007037509195.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "hogar-cocina"
+    ]
   },
   {
     "nombre": "Pegatinas Kuromi, My Melody y Hello Kitty (10 a 100 uds.)",
@@ -244,7 +262,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005009508869625.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "pegatinas"
+    ]
   },
   {
     "nombre": "Caja organizadora y portalápices Hello Kitty",
@@ -252,9 +273,7 @@
     "precio": 4.33,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -263,7 +282,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256811638136162.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Portalápices de escritorio Hello Kitty",
@@ -278,7 +300,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005012531779089.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Estuche grande Hello Kitty",
@@ -286,8 +311,7 @@
     "precio": 8.46,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -296,7 +320,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005011587293235.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Neceser de viaje Hello Kitty",
@@ -304,8 +331,7 @@
     "precio": 5.05,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -314,7 +340,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005011939965743.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "mochilas"
+    ]
   },
   {
     "nombre": "Pantalón de pijama Hello Kitty",
@@ -322,9 +351,7 @@
     "precio": 2.09,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -333,7 +360,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005008715800236.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "pijamas-kigurumis"
+    ]
   },
   {
     "nombre": "Funda organizadora Hello Kitty, Kuromi y Pochacco",
@@ -341,8 +371,7 @@
     "precio": 5.73,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -353,7 +382,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005012736819434.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "mochilas"
+    ]
   },
   {
     "nombre": "Neceser de malla Sanrio",
@@ -361,15 +393,17 @@
     "precio": 9.56,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [],
     "marcas": [
       "Sanrio"
     ],
     "imagen": "images/3256811594853119.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "mochilas"
+    ]
   },
   {
     "nombre": "Figuras de gatitos Sanrio en caja sorpresa",
@@ -377,8 +411,7 @@
     "precio": 5.21,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -389,7 +422,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005008115573331.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "cajas-sorpresa"
+    ]
   },
   {
     "nombre": "Set de 12 sellos Sanrio",
@@ -397,8 +433,7 @@
     "precio": 5.02,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Cinnamoroll",
@@ -411,7 +446,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005012519533187.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Minimochila Hello Kitty",
@@ -419,8 +457,7 @@
     "precio": 5.38,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty"
@@ -429,7 +466,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005012177036676.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "mochilas"
+    ]
   },
   {
     "nombre": "Zapatillas de casa Kuromi",
@@ -437,8 +477,7 @@
     "precio": 9.87,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Kuromi"
@@ -447,7 +486,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005010155184925.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "hogar-cocina"
+    ]
   },
   {
     "nombre": "Llavero peluche Sanrio serie cereza",
@@ -455,9 +497,7 @@
     "precio": 4.36,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-5",
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Kuromi",
@@ -469,7 +509,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256807269994751.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "llaveros"
+    ]
   },
   {
     "nombre": "Ramo de peluches My Melody, Kuromi y Cinnamoroll",
@@ -477,7 +520,7 @@
     "precio": 10.65,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-20"
+      "de-10-a-20"
     ],
     "personajes": [
       "My Melody",
@@ -489,7 +532,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256803587844845.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "peluches"
+    ]
   },
   {
     "nombre": "Llavero de peluche Sanrio",
@@ -497,8 +543,7 @@
     "precio": 5.02,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -511,7 +556,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005011653817619.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "llaveros"
+    ]
   },
   {
     "nombre": "3 bolígrafos de gel Sanrio",
@@ -528,7 +576,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005010374926401.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "boligrafos"
+    ]
   },
   {
     "nombre": "Figura de Hatsune Miku con Cinnamoroll",
@@ -536,7 +587,7 @@
     "precio": 19.49,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-20"
+      "de-10-a-20"
     ],
     "personajes": [
       "Hatsune Miku",
@@ -547,7 +598,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256806999081283.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "accesorios"
+    ]
   },
   {
     "nombre": "Botella transparente Sanrio 500 ml",
@@ -555,8 +609,7 @@
     "precio": 9.24,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-10",
-      "menos-de-20"
+      "menos-de-10"
     ],
     "personajes": [
       "Hello Kitty",
@@ -568,7 +621,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256806825044243.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "botellas"
+    ]
   },
   {
     "nombre": "Figuritas Sanrio de 5 cm para decorar",
@@ -584,7 +640,10 @@
       "Sanrio"
     ],
     "imagen": "images/1005006570319547.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "papeleria"
+    ]
   },
   {
     "nombre": "Vaso transparente Sanrio 500 ml",
@@ -592,7 +651,7 @@
     "precio": 17.95,
     "tipo": "no-oficial",
     "colecciones": [
-      "menos-de-20"
+      "de-10-a-20"
     ],
     "personajes": [
       "Hello Kitty",
@@ -604,7 +663,10 @@
       "Sanrio"
     ],
     "imagen": "images/3256808562399537.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "hogar-cocina"
+    ]
   },
   {
     "nombre": "Palillos Hello Kitty, My Melody y Cinnamoroll",
@@ -621,6 +683,9 @@
       "Sanrio"
     ],
     "imagen": "images/1005012412104544.webp",
-    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial"
+    "motivo": "Personajes con licencia (Pokémon, Sanrio, Disney…) en un producto que no consta como oficial",
+    "categorias": [
+      "hogar-cocina"
+    ]
   }
 ]

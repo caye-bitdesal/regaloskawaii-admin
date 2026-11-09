@@ -139,7 +139,8 @@
 					"validation": {
 						"options": [
 							"oficial",
-							"generico"
+							"generico",
+							"no-oficial"
 						]
 					}
 				},

@@ -34,9 +34,10 @@ const PUBLICAR = args.includes("--publish");
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
 const QUITAR_FONDO = args.includes("--remove-bg");
+let fondoDesactivado = false;
 let sinFotoEnBorrador = 0;
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
-const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
+const API = (process.env.EMDASH_URL || "http://localhost:4321").replace(/\/+$/, "");
 const LOCALE = process.env.EMDASH_LOCALE ?? "es";
 const TOKEN = process.env.EMDASH_TOKEN;
 
@@ -208,13 +209,19 @@ async function leerImagen(ruta) {
 
 /** Con --remove-bg: quita el fondo con IA y sube un WebP transparente. Si falla, sube la original. */
 async function prepararFoto(buffer, tipo, nombre, esAmazon = false) {
-	if (!QUITAR_FONDO || esAmazon) return { buffer, tipo, nombre };
+	if (!QUITAR_FONDO || esAmazon || fondoDesactivado) return { buffer, tipo, nombre };
 	try {
 		const { quitarFondo } = await import("./lib/remove-background.mjs");
 		const salida = await quitarFondo(buffer);
 		return { buffer: salida, tipo: "image/webp", nombre: `${nombre.replace(/\.[a-z0-9]+$/i, "")}-sinfondo.webp` };
 	} catch (e) {
-		console.log(`  ! no se pudo quitar el fondo de ${nombre}: ${e.message}; se sube la original`);
+		if (e.code === "ERR_MODULE_NOT_FOUND") {
+			// Falta scripts/lib/remove-background.mjs (o sus dependencias): se avisa una vez y se sigue sin quitar fondos
+			console.log(`  ! No se pueden quitar fondos (${e.message.split(" imported from")[0]}): se suben las fotos originales.`);
+			fondoDesactivado = true;
+		} else {
+			console.log(`  ! no se pudo quitar el fondo de ${nombre}: ${e.message}; se sube la original`);
+		}
 		return { buffer, tipo, nombre };
 	}
 }
@@ -241,7 +248,7 @@ async function subirImagen(ruta, alt, esAmazon = false) {
 
 // ---------- validación de cada producto ----------
 
-const TIPOS = new Set(["oficial", "generico"]);
+const TIPOS = new Set(["oficial", "generico", "no-oficial"]);
 const FUENTES = new Set(["propia", "marca"]);
 
 function preparar(p, i, ctx) {
@@ -269,7 +276,13 @@ function preparar(p, i, ctx) {
 
 	// Imagen: la indicada en el JSON o, si no hay, <id>.webp|jpg en la carpeta de imágenes.
 	// Las fotos de Amazon no se suben nunca (el acuerdo de afiliados no permite alojarlas).
-	let imagen = p.imagen ? (esUrl(p.imagen) ? p.imagen : resolve(ctx.base, p.imagen)) : null;
+	// Una ruta relativa se busca junto al JSON, en la carpeta actual y en la carpeta de imágenes.
+	let imagen = p.imagen
+		? esUrl(p.imagen)
+			? p.imagen
+			: [resolve(ctx.base, p.imagen), resolve(p.imagen), resolve(DIR_IMAGENES, basename(p.imagen))].find((r) => existsSync(r)) ??
+				resolve(ctx.base, p.imagen)
+		: null;
 	if (enlace?.tienda === "amazon") {
 		if (imagen) errores.push(`${pos}: no se pueden subir fotos de Amazon (quita "imagen"; la web las mostrará con la API)`);
 		imagen = null;
@@ -285,7 +298,7 @@ function preparar(p, i, ctx) {
 	}
 
 	const tipo = p.tipo ?? "generico";
-	if (!TIPOS.has(tipo)) errores.push(`${pos}: "tipo" debe ser oficial o generico`);
+	if (!TIPOS.has(tipo)) errores.push(`${pos}: "tipo" debe ser oficial, generico o no-oficial`);
 	const fuente = p.fuente_imagen ?? (imagen ? "propia" : undefined);
 	if (fuente && !FUENTES.has(fuente)) errores.push(`${pos}: "fuente_imagen" debe ser propia o marca`);
 
@@ -297,7 +310,14 @@ function preparar(p, i, ctx) {
 	}
 
 	const taxonomias = {};
+	// Un producto no oficial no se asigna a personajes ni marcas: saldría en sus páginas junto a
+	// los oficiales. En la web se muestra con el aviso «No oficial».
+	const noOficial = tipo === "no-oficial";
+	if (noOficial && (p.personajes?.length || p.marcas?.length)) {
+		console.log(`  ! ${pos}: es no-oficial; se ignoran "personajes" y "marcas"`);
+	}
 	for (const [campo, tax] of [["categorias", "categoria"], ["personajes", "personaje"], ["marcas", "marca"]]) {
+		if (noOficial && campo !== "categorias") continue;
 		if (!p[campo]?.length) continue;
 		taxonomias[tax] = [];
 		for (const valor of p[campo]) {
