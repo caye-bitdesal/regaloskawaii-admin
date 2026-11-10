@@ -12,6 +12,7 @@
  * En producción, al despublicar se avisa a GitHub y la web se reconstruye sola
  * (si el plugin notify-github está configurado).
  */
+import { clienteEmDash } from "./lib/emdash.mjs";
 const SIMULAR = process.argv.includes("--dry-run");
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const TOKEN = process.env.EMDASH_TOKEN;
@@ -20,15 +21,8 @@ if (!TOKEN) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: { Authorization: `Bearer ${TOKEN}`, ...(opciones.headers ?? {}) },
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api } = clienteEmDash(API, TOKEN);
 
 const publicados = [];
 let cursor;

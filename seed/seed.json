@@ -97,6 +97,11 @@
 					"type": "datetime"
 				},
 				{
+					"slug": "historial_precios",
+					"label": "Historial de precios (lo rellena update-prices)",
+					"type": "text"
+				},
+				{
 					"slug": "imagen",
 					"label": "Imagen principal",
 					"type": "image"

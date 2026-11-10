@@ -12,6 +12,7 @@
  */
 import { apiAliExpressConfigurada, detallesAliExpress, esEnlaceAfiliadoAliExpress, trackingIdConfigurado } from "./lib/aliexpress-api.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
+import { clienteEmDash } from "./lib/emdash.mjs";
 
 const SIMULAR = process.argv.includes("--dry-run");
 const FORZAR = process.argv.includes("--force");
@@ -30,32 +31,8 @@ if (!trackingIdConfigurado()) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: {
-			Authorization: `Bearer ${TOKEN}`,
-			...(opciones.body ? { "Content-Type": "application/json" } : {}),
-			...(opciones.headers ?? {}),
-		},
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
-
-async function paginas(ruta, campo) {
-	const items = [];
-	let cursor;
-	do {
-		const q = new URLSearchParams({ limit: "100" });
-		if (cursor) q.set("cursor", cursor);
-		const data = await api(`${ruta}${ruta.includes("?") ? "&" : "?"}${q}`);
-		items.push(...data[campo]);
-		cursor = data.nextCursor;
-	} while (cursor);
-	return items;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api, paginas } = clienteEmDash(API, TOKEN);
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -66,6 +43,8 @@ function esProductoAliExpress(item, tiendaAli) {
 	return tiendaAli || /aliexpress\./i.test(enlaces) || /^\d{13,17}$/.test(id);
 }
 
+// Una sola lectura de todos los productos (en lugar de una por producto).
+const todos = new Map((await paginas("/content/productos?status=all", "items")).map((p) => [p.id, p]));
 const tiendas = await paginas("/content/tiendas?status=all", "items");
 const pendientes = [];
 
@@ -74,7 +53,8 @@ for (const t of tiendas) {
 	if (/amazon\./i.test(plantilla)) continue;
 	const tiendaAli = /aliexpress/i.test(plantilla) || /aliexpress/i.test(t.data.title ?? "");
 	for (const ref of await paginas(`/content/tiendas/${t.id}/references/productos_tienda/parents`, "parents")) {
-		const { item } = await api(`/content/productos/${ref.id}`);
+		const item = todos.get(ref.id);
+		if (!item) continue;
 		const id = item.data.id_externo;
 		if (!id || !esProductoAliExpress(item, tiendaAli)) continue;
 		const actual = item.data.enlace_afiliado?.trim() ?? "";
@@ -115,7 +95,9 @@ for (let i = 0; i < pendientes.length; i += 20) {
 			continue;
 		}
 		try {
-			const merged = { ...item.data, enlace_afiliado: promo };
+			// El producto completo justo antes de guardarlo, para no perder ningún campo.
+			const completo = (await api(`/content/productos/${item.id}`)).item;
+			const merged = { ...completo.data, enlace_afiliado: promo };
 			const tiendaRef = t;
 			await api(`/content/productos/${item.id}`, {
 				method: "PUT",
@@ -126,7 +108,7 @@ for (let i = 0; i < pendientes.length; i += 20) {
 					},
 				}),
 			});
-			if (item.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
+			if (completo.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
 			console.log(`✓ «${item.data.title}» → ${promo}`);
 			actualizados++;
 		} catch (e) {

@@ -58,10 +58,19 @@ async function llamar(method, args) {
 	return json;
 }
 
+/** Número de la API (llega como texto, p. ej. "12.34" o "30"); undefined si no es válido. */
+function numero(valor) {
+	if (valor == null || valor === "") return undefined;
+	const n = Number(valor);
+	return Number.isFinite(n) ? n : undefined;
+}
+
 /**
  * Datos de afiliado de varios productos (hasta 20 por llamada).
  * @param {string[]} ids productId de AliExpress
- * @returns {Promise<Map<string, {imagen?: string, precio?: number, enlaceAfiliado?: string, titulo?: string}>>}
+ * Los precios vienen en euros para envío a España: `precio` es el de venta (con descuento) y
+ * `precioOriginal` el de antes del descuento (igual a `precio` si no hay descuento).
+ * @returns {Promise<Map<string, {imagen?: string, precio?: number, precioOriginal?: number, descuento?: number, enlaceAfiliado?: string, titulo?: string}>>}
  */
 export async function detallesAliExpress(ids) {
 	const salida = new Map();
@@ -85,7 +94,9 @@ export async function detallesAliExpress(ids) {
 			if (imagen?.startsWith("//")) imagen = `https:${imagen}`;
 			salida.set(String(p.product_id), {
 				imagen,
-				precio: p.target_sale_price != null ? Number(p.target_sale_price) : undefined,
+				precio: numero(p.target_sale_price),
+				precioOriginal: numero(p.target_original_price),
+				descuento: numero(String(p.discount ?? "").replace("%", "")),
 				enlaceAfiliado: p.promotion_link,
 				titulo: p.product_title,
 			});

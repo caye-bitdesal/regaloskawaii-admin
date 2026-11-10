@@ -25,6 +25,7 @@ import { apiAliExpressConfigurada, detallesAliExpress } from "./lib/aliexpress-a
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
+import { clienteEmDash } from "./lib/emdash.mjs";
 
 const args = process.argv.slice(2);
 const SIMULAR = args.includes("--dry-run");
@@ -49,28 +50,8 @@ if (!TOKEN) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: { Authorization: `Bearer ${TOKEN}`, ...(opciones.headers ?? {}) },
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
-
-async function paginas(ruta, campo) {
-	const items = [];
-	let cursor;
-	do {
-		const q = new URLSearchParams({ limit: "100" });
-		if (cursor) q.set("cursor", cursor);
-		const data = await api(`${ruta}${ruta.includes("?") ? "&" : "?"}${q}`);
-		items.push(...data[campo]);
-		cursor = data.nextCursor;
-	} while (cursor);
-	return items;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api, paginas } = clienteEmDash(API, TOKEN);
 
 const MIME = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".avif": "image/avif", ".gif": "image/gif" };
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));

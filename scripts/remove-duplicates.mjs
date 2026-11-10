@@ -6,6 +6,7 @@
  * Uso:
  *   EMDASH_TOKEN=ec_pat_… node scripts/remove-duplicates.mjs [--dry-run]
  */
+import { clienteEmDash } from "./lib/emdash.mjs";
 const SIMULAR = process.argv.includes("--dry-run");
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const TOKEN = process.env.EMDASH_TOKEN;
@@ -14,25 +15,8 @@ if (!TOKEN) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, { ...opciones, headers: { Authorization: `Bearer ${TOKEN}` } });
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
-
-async function paginas(ruta, campo) {
-	const items = [];
-	let cursor;
-	do {
-		const q = new URLSearchParams({ limit: "100" });
-		if (cursor) q.set("cursor", cursor);
-		const data = await api(`${ruta}${ruta.includes("?") ? "&" : "?"}${q}`);
-		items.push(...data[campo]);
-		cursor = data.nextCursor;
-	} while (cursor);
-	return items;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api, paginas } = clienteEmDash(API, TOKEN);
 
 const productos = await paginas("/content/productos?status=all", "items");
 const tiendas = await paginas("/content/tiendas?status=all", "items");

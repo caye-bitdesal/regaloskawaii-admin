@@ -15,6 +15,7 @@ import { idItemAliExpress, tipoTiendaAfiliado, tieneTagAmazon } from "./lib/affi
 import { esEnlaceAfiliadoAliExpress } from "./lib/aliexpress-api.mjs";
 import { leerUrlsEnOrden, mapaEnlacesAliExpressPortals } from "./lib/parse-affiliate-csv.mjs";
 import { calcularPrioridad, clasificarErrorAliExpress } from "./lib/product-priority.mjs";
+import { clienteEmDash } from "./lib/emdash.mjs";
 
 const SIMULAR = process.argv.includes("--dry-run");
 const FORZAR_ORDEN = process.argv.includes("--orden");
@@ -32,18 +33,8 @@ if (!TOKEN) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: {
-			Authorization: `Bearer ${TOKEN}`,
-			...(opciones.body ? { "Content-Type": "application/json" } : {}),
-		},
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api } = clienteEmDash(API, TOKEN);
 
 function esUrlValida(url) {
 	if (!url?.trim()) return false;

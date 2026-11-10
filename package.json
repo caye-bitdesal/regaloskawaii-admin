@@ -13,7 +13,8 @@
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
     "typecheck": "astro check",
-    "import": "node scripts/import-products.mjs"
+    "import": "node scripts/import-products.mjs",
+    "update-prices": "node --env-file=.env scripts/update-prices.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",

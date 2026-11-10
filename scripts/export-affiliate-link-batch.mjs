@@ -18,6 +18,7 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { clave, necesitaEnlaceAfiliado, tipoTiendaAfiliado } from "./lib/affiliate-link-check.mjs";
+import { clienteEmDash } from "./lib/emdash.mjs";
 
 const argv = process.argv.slice(2);
 const nombreTienda = argv.find((a) => !a.startsWith("--"));
@@ -35,18 +36,8 @@ if (!TOKEN) {
 	process.exit(1);
 }
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: {
-			Authorization: `Bearer ${TOKEN}`,
-			...(opciones.body ? { "Content-Type": "application/json" } : {}),
-		},
-	});
-	const json = await res.json().catch(() => ({}));
-	if (!json.success) throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.message ?? `HTTP ${res.status}`}`);
-	return json.data;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api } = clienteEmDash(API, TOKEN);
 
 async function padres(coleccion, id, relacion) {
 	const items = [];

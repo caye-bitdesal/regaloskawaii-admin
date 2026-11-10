@@ -29,6 +29,7 @@ import { readFile } from "node:fs/promises";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
 import { basename, dirname, extname, resolve } from "node:path";
+import { clienteEmDash } from "./lib/emdash.mjs";
 
 const args = process.argv.slice(2);
 const fichero = args.find((a) => !a.startsWith("--"));
@@ -53,22 +54,8 @@ function salir(msg) {
 
 // ---------- API ----------
 
-async function api(ruta, opciones = {}) {
-	const res = await fetch(`${API}/_emdash/api${ruta}`, {
-		...opciones,
-		headers: { Authorization: `Bearer ${TOKEN}`, ...(opciones.headers ?? {}) },
-	});
-	let json;
-	try {
-		json = await res.json();
-	} catch {
-		throw new Error(`${opciones.method ?? "GET"} ${ruta}: HTTP ${res.status} (respuesta no JSON)`);
-	}
-	if (!json.success) {
-		throw new Error(`${opciones.method ?? "GET"} ${ruta}: ${json.error?.code ?? res.status} ${json.error?.message ?? ""}`.trim());
-	}
-	return json.data;
-}
+// Cliente con pausa, reintentos y páginas pequeñas para no saturar EmDash (lib/emdash.mjs).
+const { api } = clienteEmDash(API, TOKEN);
 
 async function listarTodo(coleccion) {
 	const items = [];
