@@ -145,6 +145,17 @@
 					}
 				},
 				{
+					"slug": "priority",
+					"label": "Prioridad en listados (2=oficial, 1=afiliado, 0=sin afiliación)",
+					"type": "integer",
+					"indexed": true,
+					"defaultValue": 1,
+					"validation": {
+						"min": 0,
+						"max": 9
+					}
+				},
+				{
 					"slug": "edad_min",
 					"label": "Edad mínima recomendada",
 					"type": "integer",

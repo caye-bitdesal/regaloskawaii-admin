@@ -36,7 +36,7 @@ Una lista de productos (ver `docs/ejemplo-productos.json`):
 | `id_externo` | Solo si el enlace no lo lleva | ASIN o product_id. Necesario con enlaces cortos (`amzn.to`, `s.click.aliexpress.com`) |
 | `tienda` | No | Nombre de la tienda en EmDash («Amazon España», «AliExpress»). Se deduce del enlace; ponlo si usas enlaces cortos |
 | `precio` | No | Precio de referencia en € |
-| `tipo` | No | `oficial`, `generico` o `no-oficial` (por defecto `generico`). Con `no-oficial` la web muestra el aviso de autenticidad, pero **sí** puede llevar personajes y marcas |
+| `tipo` | No | `oficial`, `generico` o `no-oficial`. **Por defecto:** `oficial` en Amazon, `generico` en el resto. Con `no-oficial` la web muestra el aviso de autenticidad, pero **sí** puede llevar personajes y marcas |
 | `edad_min` | No | Edad mínima recomendada |
 | `resumen` | No | 1–2 frases para la tarjeta (máx. 200 caracteres) |
 | `descripcion` | No | Texto largo; los párrafos se separan con una línea en blanco (`\n\n`) |
@@ -94,7 +94,7 @@ DB=$(ls .wrangler/state/v3/d1/miniflare-D1DatabaseObject/*.sqlite | grep -v meta
 npx emdash seed -d "$DB" --on-conflict skip seed/seed.json
 ```
 
-Con `--on-conflict skip` no toca nada de lo que ya existe: solo crea lo que falta. No cambia el tipo de un campo ya creado (para eso, `scripts/fix-affiliate-link-field.mjs`).
+Con `--on-conflict skip` no toca nada de lo que ya existe: solo crea lo que falta. No cambia el tipo de un campo ya creado (hay que corregirlo en el panel o en el seed).
 
 ### En producción: desde GitHub Actions
 
@@ -135,20 +135,48 @@ Si algo está mal, no se crea nada:
   - #1 «X»: no existe la colección "navidad" (existen: menos-de-10, …)
 ```
 
-## Productos no oficiales ya importados (personaje/marca)
+## Enlaces de afiliado por lotes (exportar / aplicar)
 
-Si un producto se importó cuando el script **no** guardaba personajes en `no-oficial`, asígnalos en masa desde un JSON (p. ej. `datos/pendientes-no-oficiales.json`):
+Scripts: `scripts/lib/affiliate-link-check.mjs` (reglas), `export-affiliate-link-batch.mjs`, `apply-affiliate-link-batch.mjs`.
+
+**Criterios**
+
+- **AliExpress:** incorrecto si `enlace_afiliado` no es `https://s.click.aliexpress.com/…`. El CSV exporta `https://es.aliexpress.com/item/{id}.html` (como tu `batch_link_generate.csv`, cabecera `URL`).
+- **Amazon:** incorrecto si el campo está vacío o no lleva `tag=` (o no coincide con `tag_web` de la tienda). El CSV exporta `https://www.amazon.es/dp/{ASIN}`.
 
 ```bash
-EMDASH_TOKEN=ec_pat_… node scripts/assign-unofficial-taxonomies.mjs --dry-run
-EMDASH_TOKEN=ec_pat_… node scripts/assign-unofficial-taxonomies.mjs
+# 1) Exportar (mismo orden en CSV y JSON)
+EMDASH_TOKEN=ec_pat_… node scripts/export-affiliate-link-batch.mjs "AliExpress"
+# → datos/affiliate-batch-aliexpress-YYYY-MM-DD.csv + .json
+
+# 2) Generar enlaces en Portals / Site Stripe con el CSV
+
+# 3) Aplicar el CSV que devuelve AliExpress Portals («Original URL», «Tracking URL», «Error Notes»)
+#    Match automático por ID de item; no hace falta el mismo orden. Filas sin Tracking URL se omiten.
+EMDASH_TOKEN=ec_pat_… node scripts/apply-affiliate-link-batch.mjs datos/affiliate-batch-….json portales-resultado.csv --dry-run
+EMDASH_TOKEN=ec_pat_… node scripts/apply-affiliate-link-batch.mjs datos/affiliate-batch-….json portales-resultado.csv
+
+# Amazon u otro CSV con una URL por línea: mismo orden que el manifiesto (--orden también fuerza ese modo)
 ```
 
-Solo actúa sobre fichas con tipo `no-oficial` en EmDash; añade términos que falten sin quitar los existentes.
+El JSON incluye por producto: `productId`, `url_batch`, `enlace_original`, `slug`, `title`, `id_externo`.
+
+Al aplicar el CSV de AliExpress Portals: enlaces con **Tracking URL** actualizan afiliado y **prioridad** (2 oficial, 1 afiliado). **Target country** → despublica. **Non-affiliate** → prioridad 0.
+
+El campo `priority` (0–2) viene en `seed/seed.json`; en bases antiguas créalo en el panel si falta.
+
+## Otros scripts útiles
+
+| Script | Uso |
+|---|---|
+| `fill-photos.mjs` | Fotos a productos sin imagen |
+| `fill-affiliate-links.mjs` | Enlaces AliExpress vía API (alternativa al lote Portals) |
+| `remove-duplicates.mjs` | Duplicados (misma tienda + `id_externo`) |
+| `unpublish-without-photo.mjs` | Borrador para publicados sin foto |
 
 ## Limitaciones
 
-- **No actualiza** productos existentes: si cambias el precio de uno ya importado, hazlo en el panel (o bórralo y vuelve a importarlo). Excepción: `assign-unofficial-taxonomies.mjs` sí actualiza personajes y marcas.
+- **No actualiza** productos existentes: si cambias el precio de uno ya importado, hazlo en el panel (o bórralo y vuelve a importarlo).
 - **Campos nuevos del seed**: el seed solo se aplica a una base vacía. Si añades un campo al seed después (como `enlace_afiliado`), créalo también en el panel o el script te avisará antes de importar.
 - Si un producto falla al crearse, su foto se borra para no dejar imágenes huérfanas.
 - **Personajes y marcas** tienen que existir antes en el panel (Taxonomías). El script te dice cuáles faltan.
@@ -156,16 +184,4 @@ Solo actúa sobre fichas con tipo `no-oficial` en EmDash; añade términos que f
 
 ## Categorías y subcategorías
 
-«Categorías» es jerárquica: la lista completa está en `seed/seed.json`. Para poner al día una base
-de datos que ya existe (local o producción) después de cambiar el seed:
-
-```bash
-node scripts/update-categories.mjs --dry-run   # qué crearía y qué subcategoría daría a cada producto
-node scripts/update-categories.mjs --assign    # lo hace
-```
-
-- Crea las categorías que falten y coloca cada subcategoría bajo su padre.
-- Con `--assign` da subcategoría a los productos según su título (taza → Tazas, llavero → Llaveros,
-  libros por su ISBN…). No quita ninguna categoría y se salta los que ya tienen subcategoría.
-- Asignar categorías no avisa a GitHub: lanza «Build and deploy» a mano para verlo en la web.
-- Token con `content:read`, `content:write` y `taxonomies:manage`.
+La jerarquía de categorías está en `seed/seed.json`. Asigna categorías en el JSON de import (`categorias`) o en el panel.

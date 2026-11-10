@@ -11,6 +11,7 @@
  *   --force  vuelve a pedir enlace aunque ya parezca de afiliado
  */
 import { apiAliExpressConfigurada, detallesAliExpress, esEnlaceAfiliadoAliExpress, trackingIdConfigurado } from "./lib/aliexpress-api.mjs";
+import { calcularPrioridad } from "./lib/product-priority.mjs";
 
 const SIMULAR = process.argv.includes("--dry-run");
 const FORZAR = process.argv.includes("--force");
@@ -78,7 +79,7 @@ for (const t of tiendas) {
 		if (!id || !esProductoAliExpress(item, tiendaAli)) continue;
 		const actual = item.data.enlace_afiliado?.trim() ?? "";
 		if (!FORZAR && actual && esEnlaceAfiliadoAliExpress(actual)) continue;
-		pendientes.push({ item, id: String(id) });
+		pendientes.push({ item, id: String(id), tienda: t });
 	}
 }
 
@@ -101,7 +102,7 @@ for (let i = 0; i < pendientes.length; i += 20) {
 		errores += lote.length;
 		continue;
 	}
-	for (const { item, id } of lote) {
+	for (const { item, id, tienda: t } of lote) {
 		const promo = datos.get(id)?.enlaceAfiliado?.trim();
 		if (!promo || !esEnlaceAfiliadoAliExpress(promo)) {
 			console.log(`  ! «${item.data.title}»: sin enlace de afiliado en la API (¿producto fuera del programa?)`);
@@ -114,9 +115,16 @@ for (let i = 0; i < pendientes.length; i += 20) {
 			continue;
 		}
 		try {
+			const merged = { ...item.data, enlace_afiliado: promo };
+			const tiendaRef = t;
 			await api(`/content/productos/${item.id}`, {
 				method: "PUT",
-				body: JSON.stringify({ data: { enlace_afiliado: promo } }),
+				body: JSON.stringify({
+					data: {
+						...merged,
+						...(tiendaRef ? { priority: calcularPrioridad(merged, tiendaRef) } : {}),
+					},
+				}),
 			});
 			if (item.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
 			console.log(`✓ «${item.data.title}» → ${promo}`);

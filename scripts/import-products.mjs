@@ -26,6 +26,8 @@
  */
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { calcularPrioridad } from "./lib/product-priority.mjs";
+import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
 import { basename, dirname, extname, resolve } from "node:path";
 
 const args = process.argv.slice(2);
@@ -297,7 +299,7 @@ function preparar(p, i, ctx) {
 		} else if (!MIME[extname(imagen).toLowerCase()]) errores.push(`${pos}: formato de imagen no admitido (${basename(imagen)})`);
 	}
 
-	const tipo = p.tipo ?? "generico";
+	const tipo = tipoProductoPorDefecto(p.tipo, tienda, enlace?.tienda);
 	if (!TIPOS.has(tipo)) errores.push(`${pos}: "tipo" debe ser oficial, generico o no-oficial`);
 	const fuente = p.fuente_imagen ?? (imagen ? "propia" : undefined);
 	if (fuente && !FUENTES.has(fuente)) errores.push(`${pos}: "fuente_imagen" debe ser propia o marca`);
@@ -325,6 +327,10 @@ function preparar(p, i, ctx) {
 	// en el resto se guarda el enlace tal cual (p. ej. el s.click de AliExpress).
 	const guardarEnlace = p.enlace_afiliado ?? (enlace?.tienda === "amazon" ? undefined : p.enlace);
 
+	const datosPrioridad = {
+		tipo,
+		enlace_afiliado: guardarEnlace ?? "",
+	};
 	const data = {
 		title: String(p.nombre ?? "").trim(),
 		...(p.resumen ? { resumen: String(p.resumen).slice(0, 200) } : {}),
@@ -335,6 +341,7 @@ function preparar(p, i, ctx) {
 		...(p.precio != null ? { precio_actualizado: new Date().toISOString() } : {}),
 		...(fuente ? { fuente_imagen: fuente } : {}),
 		tipo,
+		...(tienda ? { priority: calcularPrioridad(datosPrioridad, tienda) } : {}),
 		...(p.edad_min != null ? { edad_min: Number(p.edad_min) } : {}),
 		destacado: Boolean(p.destacado),
 		para_grabar: Boolean(p.para_grabar),
@@ -417,7 +424,9 @@ const ctx = {
 
 const tipoEnlace = ctx.campos.get("enlace_afiliado");
 if (tipoEnlace && tipoEnlace !== "url") {
-	salir(`El campo enlace_afiliado es de tipo "${tipoEnlace}" y debe ser URL; ejecuta: node scripts/fix-affiliate-link-field.mjs`);
+	salir(
+		`El campo enlace_afiliado es de tipo "${tipoEnlace}" y debe ser URL; créalo o corrígelo en el panel (Tipos de contenido → Productos) o reaplica seed/seed.json en una base nueva.`,
+	);
 }
 
 // Primero se separa lo que ya está en EmDash (o repetido en el fichero): eso no se valida ni se importa.
