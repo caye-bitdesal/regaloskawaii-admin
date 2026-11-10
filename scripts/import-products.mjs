@@ -310,14 +310,8 @@ function preparar(p, i, ctx) {
 	}
 
 	const taxonomias = {};
-	// Un producto no oficial no se asigna a personajes ni marcas: saldría en sus páginas junto a
-	// los oficiales. En la web se muestra con el aviso «No oficial».
-	const noOficial = tipo === "no-oficial";
-	if (noOficial && (p.personajes?.length || p.marcas?.length)) {
-		console.log(`  ! ${pos}: es no-oficial; se ignoran "personajes" y "marcas"`);
-	}
+	// no-oficial: personajes y marcas sí se asignan; la web muestra el aviso «No oficial» en ficha y tarjeta.
 	for (const [campo, tax] of [["categorias", "categoria"], ["personajes", "personaje"], ["marcas", "marca"]]) {
-		if (noOficial && campo !== "categorias") continue;
 		if (!p[campo]?.length) continue;
 		taxonomias[tax] = [];
 		for (const valor of p[campo]) {

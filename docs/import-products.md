@@ -36,7 +36,7 @@ Una lista de productos (ver `docs/ejemplo-productos.json`):
 | `id_externo` | Solo si el enlace no lo lleva | ASIN o product_id. Necesario con enlaces cortos (`amzn.to`, `s.click.aliexpress.com`) |
 | `tienda` | No | Nombre de la tienda en EmDash («Amazon España», «AliExpress»). Se deduce del enlace; ponlo si usas enlaces cortos |
 | `precio` | No | Precio de referencia en € |
-| `tipo` | No | `oficial` o `generico` (por defecto `generico`) |
+| `tipo` | No | `oficial`, `generico` o `no-oficial` (por defecto `generico`). Con `no-oficial` la web muestra el aviso de autenticidad, pero **sí** puede llevar personajes y marcas |
 | `edad_min` | No | Edad mínima recomendada |
 | `resumen` | No | 1–2 frases para la tarjeta (máx. 200 caracteres) |
 | `descripcion` | No | Texto largo; los párrafos se separan con una línea en blanco (`\n\n`) |
@@ -135,9 +135,20 @@ Si algo está mal, no se crea nada:
   - #1 «X»: no existe la colección "navidad" (existen: menos-de-10, …)
 ```
 
+## Productos no oficiales ya importados (personaje/marca)
+
+Si un producto se importó cuando el script **no** guardaba personajes en `no-oficial`, asígnalos en masa desde un JSON (p. ej. `datos/pendientes-no-oficiales.json`):
+
+```bash
+EMDASH_TOKEN=ec_pat_… node scripts/assign-unofficial-taxonomies.mjs --dry-run
+EMDASH_TOKEN=ec_pat_… node scripts/assign-unofficial-taxonomies.mjs
+```
+
+Solo actúa sobre fichas con tipo `no-oficial` en EmDash; añade términos que falten sin quitar los existentes.
+
 ## Limitaciones
 
-- **No actualiza** productos existentes: si cambias el precio de uno ya importado, hazlo en el panel (o bórralo y vuelve a importarlo).
+- **No actualiza** productos existentes: si cambias el precio de uno ya importado, hazlo en el panel (o bórralo y vuelve a importarlo). Excepción: `assign-unofficial-taxonomies.mjs` sí actualiza personajes y marcas.
 - **Campos nuevos del seed**: el seed solo se aplica a una base vacía. Si añades un campo al seed después (como `enlace_afiliado`), créalo también en el panel o el script te avisará antes de importar.
 - Si un producto falla al crearse, su foto se borra para no dejar imágenes huérfanas.
 - **Personajes y marcas** tienen que existir antes en el panel (Taxonomías). El script te dice cuáles faltan.
