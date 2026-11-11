@@ -12,7 +12,8 @@
  *
  * Opciones:
  *   --publish    Publica cada producto al crearlo (por defecto se crean como borrador).
- *                 Los que se quedan sin foto se crean en borrador igualmente.
+ *                 Los que se quedan sin foto también se publican, con prioridad 0
+ *                 (salen al final de la web hasta que fill-photos les pone foto).
  *   --dry-run     No crea nada: valida el fichero y muestra lo que haría
  *   --images=DIR Carpeta donde buscar la foto de cada producto por su ID
  *                 (p. ej. images/1005007345370415.webp). Por defecto: images/
@@ -356,6 +357,8 @@ function preparar(p, i, ctx) {
 		},
 		imagen,
 		alt: p.alt ?? p.nombre,
+		// Para recalcular la prioridad cuando se sepa si tiene foto.
+		prioridad: tienda ? { datos: datosPrioridad, tienda } : null,
 	};
 }
 
@@ -363,7 +366,16 @@ function preparar(p, i, ctx) {
 
 const productos = JSON.parse(await readFile(fichero, "utf8"));
 const lista = Array.isArray(productos) ? productos : productos.productos;
-if (!Array.isArray(lista)) salir('El fichero debe ser una lista [...] o un objeto { "productos": [...] }');
+if (!Array.isArray(lista)) {
+	// Manifiesto de export-affiliate-link-batch.mjs: no son productos nuevos.
+	if (productos && Array.isArray(productos.items) && productos.csvFile) {
+		salir(
+			`${fichero} es un lote de enlaces de afiliado (export-affiliate-link-batch.mjs), no una lista de productos.\n` +
+				`  Se aplica con: node scripts/apply-affiliate-link-batch.mjs ${fichero} <urls de Portals.csv>`,
+		);
+	}
+	salir('El fichero debe ser una lista [...] o un objeto { "productos": [...] }');
+}
 
 console.log(`EmDash: ${API}${SIMULAR ? " (simulación)" : ""}`);
 const [esquema, tiendas, colecciones, existentes, categorias, personajes, marcas] = await Promise.all([
@@ -478,16 +490,18 @@ for (const p of nuevos) {
 				p.imagen = null;
 			}
 		}
+		// Sin foto, prioridad 0 (al final de la web); con foto, la que le toque.
+		if (p.prioridad) {
+			p.cuerpo.data.priority = calcularPrioridad({ ...p.prioridad.datos, imagen: p.cuerpo.data.imagen }, p.prioridad.tienda);
+		}
 		const { item } = await api("/content/productos", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(p.cuerpo),
 		});
-		// En la web solo salen productos con foto: sin foto se queda en borrador aunque se pida --publish.
-		const publicar = PUBLICAR && Boolean(p.imagen);
-		if (publicar) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
-		else if (PUBLICAR) sinFotoEnBorrador++;
-		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : ""}${publicar ? " (publicado)" : PUBLICAR ? " (borrador: no tiene foto)" : " (borrador)"}`);
+		if (PUBLICAR) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
+		if (!p.imagen) sinFotoEnBorrador++;
+		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : " sin foto (prioridad 0)"}${PUBLICAR ? " (publicado)" : " (borrador)"}`);
 		creados++;
 	} catch (e) {
 		// Si la foto se subió pero el producto no se creó, se borra para no dejarla huérfana.
@@ -500,5 +514,5 @@ for (const p of nuevos) {
 console.log(
 	`\n${SIMULAR ? "Nuevos (se crearían)" : "Nuevos creados"}: ${creados} · Ya existían: ${cuenta.existe}` +
 		` · En la papelera: ${cuenta.papelera} · Repetidos en el fichero: ${cuenta.repetido}` +
-		(sinFotoEnBorrador ? ` · En borrador por no tener foto: ${sinFotoEnBorrador}` : ""),
+		(sinFotoEnBorrador ? ` · Sin foto (prioridad 0): ${sinFotoEnBorrador}` : ""),
 );

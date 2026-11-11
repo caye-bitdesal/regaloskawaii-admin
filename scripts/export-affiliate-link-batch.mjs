@@ -9,10 +9,11 @@
  *
  * Uso:
  *   EMDASH_TOKEN=ec_pat_… node scripts/export-affiliate-link-batch.mjs "AliExpress"
- *   EMDASH_TOKEN=ec_pat_… node scripts/export-affiliate-link-batch.mjs "Amazon España" --out-dir=datos
+ *   EMDASH_TOKEN=ec_pat_… node scripts/export-affiliate-link-batch.mjs "Amazon España" --out-dir=lotes-afiliados
  *
  * Opciones:
- *   --out-dir=DIR   Carpeta de salida (por defecto: datos)
+ *   --out-dir=DIR   Carpeta de salida (por defecto: lotes-afiliados; no uses datos/, que es para
+ *                   importar productos y lo vigila el workflow «Import products»)
  *   --prefix=NOMBRE Prefijo de fichero (por defecto: affiliate-batch-<slug-tienda>-<fecha>)
  */
 import { writeFile, mkdir } from "node:fs/promises";
@@ -23,11 +24,11 @@ import { clienteEmDash } from "./lib/emdash.mjs";
 const argv = process.argv.slice(2);
 const nombreTienda = argv.find((a) => !a.startsWith("--"));
 if (!nombreTienda) {
-	console.error('Uso: node scripts/export-affiliate-link-batch.mjs "<nombre tienda>" [--out-dir=datos] [--prefix=…]');
+	console.error('Uso: node scripts/export-affiliate-link-batch.mjs "<nombre tienda>" [--out-dir=lotes-afiliados] [--prefix=…]');
 	process.exit(1);
 }
 
-const outDir = resolve(argv.find((a) => a.startsWith("--out-dir="))?.slice(10) ?? "datos");
+const outDir = resolve(argv.find((a) => a.startsWith("--out-dir="))?.slice(10) ?? "lotes-afiliados");
 const prefixOpt = argv.find((a) => a.startsWith("--prefix="))?.slice(9);
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const TOKEN = process.env.EMDASH_TOKEN;

@@ -18,20 +18,26 @@
  *     al volver a ejecutarlo sigue por donde iba;
  *   - va más despacio cuando EmDash da 503 y se para si sigue saturado.
  *
+ * Los productos que la API no devuelve (fuera del programa de afiliados: sin comisión,
+ * precio ni foto) y que no tienen un enlace de afiliado puesto a mano se quedan con
+ * prioridad 0, al final de la web (lib/out-of-program.mjs). Con --keep-priority no se tocan.
+ *
  * Requiere en .env: ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET (y ALIEXPRESS_TRACKING_ID)
  * y el campo «historial_precios» (Texto) en Tipos de contenido → Productos.
  *
  * Uso:
- *   node --env-file=.env scripts/update-prices.mjs [--dry-run]
+ *   node --env-file=.env scripts/update-prices.mjs [--dry-run] [--keep-priority]
  *   EMDASH_PAUSA_MS=1000 …   pausa mínima entre llamadas a EmDash (por defecto 500 ms)
  *   EMDASH_LIMITE=25 …       elementos por página en los listados (por defecto 50)
  */
 import { apiAliExpressConfigurada, detallesAliExpress } from "./lib/aliexpress-api.mjs";
 import { clienteEmDash } from "./lib/emdash.mjs";
+import { bajarPrioridadFueraDePrograma } from "./lib/out-of-program.mjs";
 import { descuentoLegal, fechaUTC, leerHistorial, registrarPrecio } from "./lib/price-history.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 
 const SIMULAR = process.argv.includes("--dry-run");
+const BAJAR_PRIORIDAD = !process.argv.includes("--keep-priority");
 const API = (process.env.EMDASH_URL ?? "http://localhost:4321").replace(/\/+$/, "");
 const TOKEN = process.env.EMDASH_TOKEN;
 if (!TOKEN) {
@@ -110,6 +116,8 @@ const ahora = new Date().toISOString();
 const hoy = fechaUTC();
 const cuenta = { actualizados: 0, sinCambios: 0, conDescuento: 0, sinDatos: 0, errores: 0 };
 let fallosSeguidos = 0;
+const sinDatosEnApi = [];
+let consultados = 0;
 
 lotes: for (let i = 0; i < productos.length; i += 20) {
 	const lote = productos.slice(i, i + 20);
@@ -121,6 +129,7 @@ lotes: for (let i = 0; i < productos.length; i += 20) {
 		cuenta.errores += lote.length;
 		continue;
 	}
+	consultados += lote.length;
 
 	for (const { resumen, id, tienda } of lote) {
 		const titulo = resumen.data.title;
@@ -128,6 +137,7 @@ lotes: for (let i = 0; i < productos.length; i += 20) {
 		if (!d?.precio || d.precio <= 0) {
 			console.log(`  ! «${titulo}»: la API no devuelve precio (¿producto fuera del programa o retirado?)`);
 			cuenta.sinDatos++;
+			sinDatosEnApi.push(resumen);
 			continue;
 		}
 		const precio = redondear(d.precio);
@@ -188,8 +198,10 @@ lotes: for (let i = 0; i < productos.length; i += 20) {
 	}
 }
 
+const bajados = BAJAR_PRIORIDAD ? await bajarPrioridadFueraDePrograma(api, sinDatosEnApi, { simular: SIMULAR, consultados }) : 0;
+
 console.log(
-	`\n${SIMULAR ? "Se actualizarían" : "Actualizados"}: ${cuenta.actualizados} · Sin cambios: ${cuenta.sinCambios} · Con descuento: ${cuenta.conDescuento} · Sin datos en la API: ${cuenta.sinDatos} · Errores: ${cuenta.errores}`,
+	`\n${SIMULAR ? "Se actualizarían" : "Actualizados"}: ${cuenta.actualizados} · Sin cambios: ${cuenta.sinCambios} · Con descuento: ${cuenta.conDescuento} · Sin datos en la API: ${cuenta.sinDatos} (a prioridad 0: ${bajados}) · Errores: ${cuenta.errores}`,
 );
 if (cuenta.actualizados && !SIMULAR) {
 	console.log("La web se reconstruye sola esta noche, o lánzala ya desde Actions → Build and deploy → Run workflow.");

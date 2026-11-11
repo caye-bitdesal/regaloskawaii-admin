@@ -7,12 +7,14 @@
  *   ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET, ALIEXPRESS_TRACKING_ID
  *
  * Uso:
- *   node --env-file=.env scripts/fill-affiliate-links.mjs [--dry-run] [--force]
- *   --force  vuelve a pedir enlace aunque ya parezca de afiliado
+ *   node --env-file=.env scripts/fill-affiliate-links.mjs [--dry-run] [--force] [--keep-priority]
+ *   --force         vuelve a pedir enlace aunque ya parezca de afiliado
+ *   --keep-priority  no baja a prioridad 0 los que la API no devuelve (fuera del programa)
  */
 import { apiAliExpressConfigurada, detallesAliExpress, esEnlaceAfiliadoAliExpress, trackingIdConfigurado } from "./lib/aliexpress-api.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 import { clienteEmDash } from "./lib/emdash.mjs";
+import { bajarPrioridadFueraDePrograma } from "./lib/out-of-program.mjs";
 
 const SIMULAR = process.argv.includes("--dry-run");
 const FORZAR = process.argv.includes("--force");
@@ -70,6 +72,7 @@ if (!pendientes.length) process.exit(0);
 
 let actualizados = 0;
 let sinEnlace = 0;
+const sinEnlaceEnApi = [];
 let errores = 0;
 
 for (let i = 0; i < pendientes.length; i += 20) {
@@ -87,6 +90,7 @@ for (let i = 0; i < pendientes.length; i += 20) {
 		if (!promo || !esEnlaceAfiliadoAliExpress(promo)) {
 			console.log(`  ! «${item.data.title}»: sin enlace de afiliado en la API (¿producto fuera del programa?)`);
 			sinEnlace++;
+			sinEnlaceEnApi.push(item);
 			continue;
 		}
 		if (SIMULAR) {
@@ -119,8 +123,13 @@ for (let i = 0; i < pendientes.length; i += 20) {
 	if (i + 20 < pendientes.length) await esperar(1000);
 }
 
+// Sin enlace de afiliado en la API: fuera del programa → prioridad 0 (salvo con --keep-priority).
+const bajados = process.argv.includes("--keep-priority")
+	? 0
+	: await bajarPrioridadFueraDePrograma(api, sinEnlaceEnApi, { simular: SIMULAR });
+
 console.log(
-	`\n${SIMULAR ? "Se actualizarían" : "Actualizados"}: ${actualizados} · Sin enlace en API: ${sinEnlace} · Errores: ${errores}`,
+	`\n${SIMULAR ? "Se actualizarían" : "Actualizados"}: ${actualizados} · Sin enlace en API: ${sinEnlace} (a prioridad 0: ${bajados}) · Errores: ${errores}`,
 );
 if (actualizados && !SIMULAR) {
 	console.log("Siguiente paso en regaloskawaii: npm run sync-content (o REFRESH_CONTENT=1 npm run build)");

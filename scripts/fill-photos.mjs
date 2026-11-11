@@ -26,6 +26,7 @@ import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { clienteEmDash } from "./lib/emdash.mjs";
+import { calcularPrioridad } from "./lib/product-priority.mjs";
 
 const args = process.argv.slice(2);
 const SIMULAR = args.includes("--dry-run");
@@ -212,6 +213,8 @@ console.log(
 		? `AliExpress: API de afiliados (App Key …${process.env.ALIEXPRESS_APP_KEY.slice(-4)})${SOLO_API ? "" : " y, si no devuelve el producto, su página"}`
 		: "AliExpress: SIN API (faltan ALIEXPRESS_APP_KEY / ALIEXPRESS_APP_SECRET; ¿has puesto --env-file=.env?): se piden las páginas, que AliExpress puede bloquear",
 );
+// Una sola lectura de todos los productos (en lugar de una por producto).
+const todos = new Map((await paginas("/content/productos?status=all", "items")).map((p) => [p.id, p]));
 const tiendas = await paginas("/content/tiendas?status=all", "items");
 let puestas = 0;
 let sinFoto = 0; // no se encontró ninguna foto
@@ -227,7 +230,8 @@ for (const t of tiendas) {
 	// por su enlace (la plantilla puede estar vacía o ser un enlace de afiliado).
 	const tiendaAli = /aliexpress/i.test(plantilla) || /aliexpress/i.test(t.data.title ?? "");
 	for (const ref of await paginas(`/content/tiendas/${t.id}/references/productos_tienda/parents`, "parents")) {
-		const { item } = await api(`/content/productos/${ref.id}`);
+		const item = todos.get(ref.id);
+		if (!item) continue;
 		const id = item.data.id_externo;
 		if (item.data.imagen || !id) continue;
 		const esAli =
@@ -294,7 +298,14 @@ for (const t of tiendas) {
 			await api(`/content/productos/${item.id}`, {
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ data: { imagen: media, fuente_imagen: item.data.fuente_imagen ?? "marca" } }),
+				body: JSON.stringify({
+					data: {
+						imagen: media,
+						fuente_imagen: item.data.fuente_imagen ?? "marca",
+						// Con foto ya no se queda al final: se recalcula la prioridad.
+						priority: calcularPrioridad({ ...item.data, imagen: media }, t),
+					},
+				}),
 			});
 			if (item.status === "published" || PUBLICAR) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
 			console.log(`✓ «${item.data.title}» ← ${ruta}`);
