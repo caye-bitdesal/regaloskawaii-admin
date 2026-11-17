@@ -20,6 +20,9 @@
  *                 Solo se usa si el producto no lleva "imagen" y no es de Amazon.
  *   --no-web-photos No buscar la foto en la página de AliExpress cuando el producto no
  *                 trae "imagen" ni hay foto en la carpeta (por defecto sí se busca).
+ *   --sin-clasificar No asignar categoría a los productos que no traen "categorias".
+ *                 Por defecto se deduce del nombre (scripts/lib/clasificar.mjs), y a toda
+ *                 subcategoría se le añade su categoría padre (squishy-comida → squishy).
  *
  * Formato del fichero: ver docs/import-products.md y docs/ejemplo-productos.json.
  * Los productos que ya existen (misma tienda e id_externo) se saltan, así que se
@@ -28,6 +31,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
+import { clasificar } from "./lib/clasificar.mjs";
 import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
 import { basename, dirname, extname, resolve } from "node:path";
 import { clienteEmDash } from "./lib/emdash.mjs";
@@ -38,6 +42,7 @@ const PUBLICAR = args.includes("--publish");
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
 const QUITAR_FONDO = args.includes("--remove-bg");
+const CLASIFICAR = !args.includes("--sin-clasificar");
 let fondoDesactivado = false;
 let sinFotoEnBorrador = 0;
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
@@ -299,16 +304,32 @@ function preparar(p, i, ctx) {
 		else errores.push(`${pos}: no existe la colección "${slug}" (existen: ${[...ctx.colecciones.values()].map((x) => x.slug).join(", ")})`);
 	}
 
+	// Sin "categorias" en el JSON: se deduce del nombre (y de las notas, que traen la búsqueda).
+	let categoriaAuto = null;
+	const listas = { categorias: p.categorias, personajes: p.personajes, marcas: p.marcas };
+	if (!p.categorias?.length && CLASIFICAR) {
+		categoriaAuto = clasificar(p.nombre, p.notas, ctx.slugsCategoria) ?? null;
+		if (categoriaAuto) listas.categorias = [categoriaAuto];
+	}
+
 	const taxonomias = {};
 	// no-oficial: personajes y marcas sí se asignan; la web muestra el aviso «No oficial» en ficha y tarjeta.
 	for (const [campo, tax] of [["categorias", "categoria"], ["personajes", "personaje"], ["marcas", "marca"]]) {
-		if (!p[campo]?.length) continue;
+		if (!listas[campo]?.length) continue;
 		taxonomias[tax] = [];
-		for (const valor of p[campo]) {
+		for (const valor of listas[campo]) {
 			const termino = ctx.terminos[tax].get(clave(valor)) ?? ctx.terminos[tax].get(slugify(valor));
 			if (termino) taxonomias[tax].push(termino);
 			else errores.push(`${pos}: no existe ${tax} "${valor}" (crea el término en el panel: ${[...new Set(ctx.terminos[tax].values())].join(", ")})`);
 		}
+	}
+	// Cada subcategoría lleva también su categoría padre, como en el panel (pegatinas → papeleria).
+	if (taxonomias.categoria) {
+		for (const slug of [...taxonomias.categoria]) {
+			const padre = ctx.padreDe.get(slug);
+			if (padre && !taxonomias.categoria.includes(padre)) taxonomias.categoria.unshift(padre);
+		}
+		taxonomias.categoria = [...new Set(taxonomias.categoria)];
 	}
 
 	// Enlace de afiliado: en Amazon se genera con la plantilla y el tag de la tienda;
@@ -356,6 +377,8 @@ function preparar(p, i, ctx) {
 			references: { tienda: tienda ? [tienda.id] : [], ...(colecciones.length ? { colecciones } : {}) },
 		},
 		imagen,
+		categorias: taxonomias.categoria ?? [],
+		categoriaAuto,
 		alt: p.alt ?? p.nombre,
 		// Para recalcular la prioridad cuando se sepa si tiene foto.
 		prioridad: tienda ? { datos: datosPrioridad, tienda } : null,
@@ -392,6 +415,8 @@ const [esquema, tiendas, colecciones, existentes, categorias, personajes, marcas
 const aplanar = (terms) => terms.flatMap((t) => [t, ...aplanar(t.children ?? [])]);
 const indiceTerminos = ({ terms }) =>
 	new Map(aplanar(terms).flatMap((t) => [[clave(t.slug), t.slug], [clave(t.label), t.slug]]));
+// slug de subcategoría → slug de su categoría padre
+const padreDe = new Map(aplanar(categorias.terms).flatMap((t) => (t.children ?? []).map((h) => [h.slug, t.slug])));
 
 // Tienda de cada producto existente (para detectar duplicados)
 const tiendaDe = new Map();
@@ -417,6 +442,8 @@ const ctx = {
 	tiendas,
 	colecciones: new Map(colecciones.map((c) => [clave(c.slug), c])),
 	terminos: { categoria: indiceTerminos(categorias), personaje: indiceTerminos(personajes), marca: indiceTerminos(marcas) },
+	slugsCategoria: new Set(aplanar(categorias.terms).map((t) => t.slug)),
+	padreDe,
 	base: dirname(resolve(fichero)),
 	campos: new Map(esquema.item.fields.map((f) => [f.slug, f.type])),
 };
@@ -458,6 +485,12 @@ for (const p of preparados) {
 	cuenta[p.estado]++;
 }
 
+/** «[papeleria, pegatinas]», con «(auto)» si la categoría la ha puesto el clasificador. */
+const textoCategorias = (p) =>
+	p.categorias.length ? `[${p.categorias.join(", ")}]${p.categoriaAuto ? " (auto)" : ""}` : "[sin categoría]";
+const sinCategoria = nuevos.filter((p) => !p.categorias.length).length;
+const autoClasificados = nuevos.filter((p) => p.categoriaAuto).length;
+
 let creados = 0;
 for (const p of nuevos) {
 	// slug único
@@ -468,7 +501,7 @@ for (const p of nuevos) {
 
 	if (SIMULAR) {
 		const foto = p.imagen ? " con imagen" : FOTOS_WEB && p.tienda === "aliexpress" ? " (buscará la foto en AliExpress)" : "";
-		console.log(`• ${p.pos}: se crearía /producto/${slug}${foto}${PUBLICAR ? " y se publicaría" : " (borrador)"}`);
+		console.log(`• ${p.pos}: se crearía /producto/${slug}${foto} ${textoCategorias(p)}${PUBLICAR ? " y se publicaría" : " (borrador)"}`);
 		creados++;
 		continue;
 	}
@@ -501,7 +534,7 @@ for (const p of nuevos) {
 		});
 		if (PUBLICAR) await api(`/content/productos/${item.id}/publish`, { method: "POST" });
 		if (!p.imagen) sinFotoEnBorrador++;
-		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : " sin foto (prioridad 0)"}${PUBLICAR ? " (publicado)" : " (borrador)"}`);
+		console.log(`✓ ${p.pos}: creado /producto/${slug}${p.imagen ? " con imagen" : " sin foto (prioridad 0)"} ${textoCategorias(p)}${PUBLICAR ? " (publicado)" : " (borrador)"}`);
 		creados++;
 	} catch (e) {
 		// Si la foto se subió pero el producto no se creó, se borra para no dejarla huérfana.
@@ -514,5 +547,7 @@ for (const p of nuevos) {
 console.log(
 	`\n${SIMULAR ? "Nuevos (se crearían)" : "Nuevos creados"}: ${creados} · Ya existían: ${cuenta.existe}` +
 		` · En la papelera: ${cuenta.papelera} · Repetidos en el fichero: ${cuenta.repetido}` +
-		(sinFotoEnBorrador ? ` · Sin foto (prioridad 0): ${sinFotoEnBorrador}` : ""),
+		(sinFotoEnBorrador ? ` · Sin foto (prioridad 0): ${sinFotoEnBorrador}` : "") +
+		(autoClasificados ? ` · Categoría deducida del nombre: ${autoClasificados}` : "") +
+		(sinCategoria ? ` · Sin categoría (asígnala en el panel): ${sinCategoria}` : ""),
 );

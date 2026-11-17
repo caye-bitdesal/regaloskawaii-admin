@@ -105,3 +105,49 @@ export async function detallesAliExpress(ids) {
 	}
 	return salida;
 }
+
+/**
+ * Busca productos del programa de afiliados por palabra clave (aliexpress.affiliate.product.query).
+ * Solo devuelve productos que están en el programa, así que todos admiten enlace de afiliado.
+ * @param {string} palabras  Texto de búsqueda, p. ej. "squishy gato"
+ * @param {{pagina?: number, porPagina?: number, orden?: string}} [opciones]
+ *   orden: LAST_VOLUME_DESC (más vendidos, por defecto), SALE_PRICE_ASC, SALE_PRICE_DESC…
+ * @returns {Promise<{total: number, productos: Array<{id: string, titulo: string, imagen?: string, precio?: number,
+ *   vendidos: number, valoracion?: number, enlaceAfiliado?: string, categoria?: string}>}>}
+ */
+export async function buscarAliExpress(palabras, { pagina = 1, porPagina = 50, orden = "LAST_VOLUME_DESC" } = {}) {
+	const json = await llamar("aliexpress.affiliate.product.query", {
+		keywords: palabras,
+		page_no: String(pagina),
+		page_size: String(Math.min(50, porPagina)),
+		sort: orden,
+		target_currency: "EUR",
+		target_language: "ES",
+		ship_to_country: "ES",
+		tracking_id: process.env.ALIEXPRESS_TRACKING_ID,
+	});
+	const resultado = json.aliexpress_affiliate_product_query_response?.resp_result;
+	// Sin resultados la API responde con un código distinto de 200 y sin productos: no es un error.
+	if (resultado && String(resultado.resp_code) !== "200") {
+		if (!resultado.result?.products) return { total: 0, productos: [] };
+		throw new Error(`API de AliExpress: ${resultado.resp_msg ?? resultado.resp_code}`);
+	}
+	const lista = resultado?.result?.products?.product ?? resultado?.result?.products ?? [];
+	const productos = [];
+	for (const p of Array.isArray(lista) ? lista : [lista]) {
+		if (!p?.product_id) continue;
+		let imagen = p.product_main_image_url;
+		if (imagen?.startsWith("//")) imagen = `https:${imagen}`;
+		productos.push({
+			id: String(p.product_id),
+			titulo: String(p.product_title ?? "").trim(),
+			imagen,
+			precio: numero(p.target_sale_price),
+			vendidos: numero(p.lastest_volume) ?? 0,
+			valoracion: numero(String(p.evaluate_rate ?? "").replace("%", "")),
+			enlaceAfiliado: p.promotion_link,
+			categoria: p.second_level_category_name ?? p.first_level_category_name,
+		});
+	}
+	return { total: numero(resultado?.result?.total_record_count) ?? productos.length, productos };
+}

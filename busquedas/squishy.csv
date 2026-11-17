@@ -1,0 +1,18 @@
+palabra,categoria,cantidad,precio_min,precio_max
+# Palabras del Planificador de Google Ads (16/11/2026), 100–1.000 búsquedas/mes cada una.
+# Las líneas que empiezan por # no se buscan. Precio en euros.
+squishy kawaii,squishy,8,,20
+squishy antiestres,squishy,6,,15
+squishy sorpresa,squishy,4,,15
+squishy gato,squishy-animales,8,,20
+squishy pato,squishy-animales,6,,25
+squishy pollito,squishy-animales,6,,25
+squishy animales,squishy-animales,6,,20
+squishy comida,squishy-comida,8,,20
+squishy fresa,squishy-comida,6,,15
+squishy helado,squishy-comida,6,,15
+squishy gigante,squishy-gigantes,8,,40
+squishy grande,squishy-gigantes,6,,40
+squishy pequeño,squishy,6,,10
+squishy llavero,squishy,6,,10
+squishy peluche,squishy,6,,25

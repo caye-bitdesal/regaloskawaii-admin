@@ -17,11 +17,15 @@ const DIA_MS = 86_400_000;
 export const fechaUTC = (d = new Date()) => d.toISOString().slice(0, 10);
 const sumarDias = (fecha, dias) => fechaUTC(new Date(Date.parse(`${fecha}T00:00:00Z`) + dias * DIA_MS));
 
-/** Lee el campo; si está vacío o mal, devuelve []. */
-export function leerHistorial(texto) {
-	if (!texto) return [];
+/**
+ * Lee el campo; si está vacío o mal, devuelve [].
+ * Se guarda como texto, pero la API de EmDash lo devuelve ya convertido en lista
+ * (detecta que es JSON): se aceptan las dos formas.
+ */
+export function leerHistorial(valor) {
+	if (!valor) return [];
 	try {
-		const lista = JSON.parse(texto);
+		const lista = typeof valor === "string" ? JSON.parse(valor) : valor;
 		if (!Array.isArray(lista)) return [];
 		return lista
 			.filter((e) => Array.isArray(e) && /^\d{4}-\d{2}-\d{2}$/.test(e[0]) && Number.isFinite(e[1]) && e[1] > 0)

@@ -1,0 +1,19 @@
+palabra,categoria,cantidad,precio_min,precio_max
+# Palabras de la semana. La tarea «Top kawaii semanal» (lunes) y «npm run search» leen este fichero.
+# - palabra: lo que se busca en la tienda (obligatoria)
+# - categoria: slug de la web; todos los productos de esa búsqueda van ahí.
+#   Vacía: cada producto se clasifica por lo que es.
+# - cantidad: productos por palabra (por defecto 20, máximo 20)
+# - precio_min / precio_max: en euros (opcionales; el mínimo nunca baja de 5 €)
+# Las líneas que empiezan por # no se buscan. Cambia la lista cuando quieras y haz push.
+squishy kawaii,squishy,20,,
+squishy gato,squishy-animales,20,,
+squishy pato,squishy-animales,20,,
+squishy pollito,squishy-animales,20,,
+squishy comida,squishy-comida,20,,
+squishy fresa,squishy-comida,20,,
+squishy helado,squishy-comida,20,,
+squishy gigante,squishy-gigantes,20,,40
+squishy peluche,,20,,
+regalos kawaii navidad,,20,,40
+cosas kawaii,,20,,40

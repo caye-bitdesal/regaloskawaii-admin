@@ -147,10 +147,7 @@ lotes: for (let i = 0; i < productos.length; i += 20) {
 		if (descuento) cuenta.conDescuento++;
 
 		const antes = resumen.data.precio_ref;
-		const cambia =
-			antes !== precio ||
-			JSON.stringify(historial) !== JSON.stringify(historialAntes) ||
-			resumen.data.precio_original != null; // campo antiguo: se borra
+		const cambia = antes !== precio || JSON.stringify(historial) !== JSON.stringify(historialAntes);
 		// Con descuento, la fecha tiene que ser reciente para que la web lo enseñe.
 		const caduca = descuento && diasDesde(resumen.data.precio_actualizado) > REFRESCO_DIAS;
 		if (!cambia && !caduca) {
@@ -165,23 +162,22 @@ lotes: for (let i = 0; i < productos.length; i += 20) {
 			continue;
 		}
 		try {
-			// El producto completo justo antes de guardarlo, para no perder ningún campo.
-			const { item } = await api(`/content/productos/${resumen.id}`);
-			// precio_original (el «antes» de AliExpress) ya no se usa: se quita.
-			const { precio_original: _viejo, ...resto } = item.data;
-			const merged = {
-				...resto,
+			// PUT parcial: EmDash mezcla los campos que se envían con los que ya hay. No se reenvía
+			// el producto entero: la API devuelve historial_precios como lista y, al reenviarlo,
+			// EmDash lo rechaza («expected string, received array»). Así además nos ahorramos un GET.
+			const cambios = {
 				precio_ref: precio,
 				historial_precios: JSON.stringify(historial),
 				precio_actualizado: ahora,
 			};
-			await api(`/content/productos/${item.id}`, {
+			const merged = { ...resumen.data, ...cambios };
+			await api(`/content/productos/${resumen.id}`, {
 				method: "PUT",
 				body: JSON.stringify({
-					data: { ...merged, ...(tienda ? { priority: calcularPrioridad(merged, tienda) } : {}) },
+					data: { ...cambios, ...(tienda ? { priority: calcularPrioridad(merged, tienda) } : {}) },
 				}),
 			});
-			if (item.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
+			if (resumen.status === "published") await api(`/content/productos/${resumen.id}/publish`, { method: "POST" });
 			console.log(`✓ ${texto}`);
 			cuenta.actualizados++;
 			fallosSeguidos = 0;

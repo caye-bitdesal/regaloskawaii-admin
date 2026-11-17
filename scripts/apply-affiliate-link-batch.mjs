@@ -77,9 +77,11 @@ let errores = 0;
 async function persistirProducto(productId, dataPatch, { republicar = true, despublicar = false } = {}) {
 	if (SIMULAR) return null;
 	const { item: actual } = await api(`/content/productos/${productId}`);
+	// PUT parcial: solo los campos que cambian. Reenviar actual.data entero falla porque la API
+	// devuelve historial_precios como lista y EmDash solo acepta texto al guardar.
 	await api(`/content/productos/${productId}`, {
 		method: "PUT",
-		body: JSON.stringify({ data: { ...actual.data, ...dataPatch } }),
+		body: JSON.stringify({ data: dataPatch }),
 	});
 	if (despublicar && actual.status === "published") {
 		await api(`/content/productos/${productId}/unpublish`, { method: "POST" });

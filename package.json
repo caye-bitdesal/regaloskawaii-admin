@@ -14,7 +14,8 @@
     "deploy": "astro build && wrangler deploy",
     "typecheck": "astro check",
     "import": "node scripts/import-products.mjs",
-    "update-prices": "node --env-file=.env scripts/update-prices.mjs"
+    "update-prices": "node --env-file=.env scripts/update-prices.mjs",
+    "search": "node --env-file=.env scripts/search-products.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.2",

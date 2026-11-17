@@ -165,10 +165,30 @@ Al aplicar el CSV de AliExpress Portals: enlaces con **Tracking URL** actualizan
 
 El campo `priority` (0–2) viene en `seed/seed.json`; en bases antiguas créalo en el panel si falta.
 
+## Categorías automáticas
+
+Si un producto del JSON no trae `categorias`, el importador la deduce de su nombre (y de las `notas`, donde va la palabra de búsqueda) con `scripts/lib/clasificar.mjs`. A toda subcategoría le añade su categoría padre, como en el panel (`pegatinas` → `papeleria` + `pegatinas`). En el `--dry-run` verás cada producto con su categoría, marcada «(auto)» cuando la ha deducido; los que no encajan en ninguna salen como «[sin categoría]» y se cuentan al final. `--sin-clasificar` lo desactiva.
+
+## Buscar productos por palabras clave (AliExpress)
+
+`search-products.mjs` busca en la API de afiliados de AliExpress las palabras de un CSV y genera un JSON con el formato de este importador. No toca EmDash (salvo leer la lista de productos para no repetir, si hay `EMDASH_TOKEN`).
+
+```bash
+npm run search            # usa busquedas/palabras.csv
+# → busquedas/resultados/busqueda-AAAA-MM-DD.json
+```
+
+CSV: `palabra,categoria,cantidad,precio_min,precio_max` (solo `palabra` es obligatoria; sin categoría, cada producto se clasifica por su nombre). Es el mismo `busquedas/palabras.csv` que lee cada lunes la tarea programada «Top kawaii semanal»: cambia las palabras, haz push y la siguiente lista saldrá con ellas (hasta 20 productos por palabra). También acepta el CSV del Planificador de palabras clave de Google Ads, con `--categoria=slug`.
+
+Filtros por defecto: con foto, hasta 40 €, al menos 20 ventas en 30 días, 90 % de valoraciones positivas y sin personajes ni marcas registradas en el título (`--permitir-marcas` lo desactiva). Cada producto lleva su `promotion_link` como `enlace_afiliado`, la colección de precio que le toca y, en `notas`, la palabra, las ventas y el título original.
+
+Revisa los nombres del JSON (vienen de la traducción automática) y después impórtalo con `import-products.mjs`, o muévelo a `datos/` y haz push.
+
 ## Otros scripts útiles
 
 | Script | Uso |
 |---|---|
+| `search-products.mjs` | Busca productos en AliExpress a partir de un CSV de palabras clave |
 | `fill-photos.mjs` | Fotos a productos sin imagen |
 | `fill-affiliate-links.mjs` | Enlaces AliExpress vía API (alternativa al lote Portals) |
 | `remove-duplicates.mjs` | Duplicados (misma tienda + `id_externo`) |

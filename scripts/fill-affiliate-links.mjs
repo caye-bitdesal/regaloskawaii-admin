@@ -99,20 +99,17 @@ for (let i = 0; i < pendientes.length; i += 20) {
 			continue;
 		}
 		try {
-			// El producto completo justo antes de guardarlo, para no perder ningún campo.
-			const completo = (await api(`/content/productos/${item.id}`)).item;
-			const merged = { ...completo.data, enlace_afiliado: promo };
-			const tiendaRef = t;
+			// PUT parcial: EmDash mezcla los campos que se envían con los que ya hay. No se reenvía
+			// el producto entero: la API devuelve historial_precios como lista y, al reenviarlo,
+			// EmDash lo rechaza («expected string, received array»).
+			const merged = { ...item.data, enlace_afiliado: promo };
 			await api(`/content/productos/${item.id}`, {
 				method: "PUT",
 				body: JSON.stringify({
-					data: {
-						...merged,
-						...(tiendaRef ? { priority: calcularPrioridad(merged, tiendaRef) } : {}),
-					},
+					data: { enlace_afiliado: promo, ...(t ? { priority: calcularPrioridad(merged, t) } : {}) },
 				}),
 			});
-			if (completo.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
+			if (item.status === "published") await api(`/content/productos/${item.id}/publish`, { method: "POST" });
 			console.log(`✓ «${item.data.title}» → ${promo}`);
 			actualizados++;
 		} catch (e) {
