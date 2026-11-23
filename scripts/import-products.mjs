@@ -30,6 +30,7 @@
  */
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { apiAliExpressConfigurada, detallesAliExpress } from "./lib/aliexpress-api.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 import { clasificar } from "./lib/clasificar.mjs";
 import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
@@ -466,6 +467,28 @@ for (const p of preparados) {
 	if (p.clave) vistosEnFichero.add(p.clave);
 }
 const nuevos = preparados.filter((p) => p.estado === "nuevo");
+
+// Fotos que faltan: primero con la API de afiliados (una llamada por cada 20 productos).
+// La página pública de AliExpress suele bloquear a los scripts, así que solo es el último recurso.
+const sinFotoAli = nuevos.filter((p) => !p.imagen && FOTOS_WEB && p.tienda === "aliexpress" && p.idExterno);
+if (sinFotoAli.length && apiAliExpressConfigurada()) {
+	try {
+		const detalles = await detallesAliExpress(sinFotoAli.map((p) => String(p.idExterno)));
+		let conFoto = 0;
+		for (const p of sinFotoAli) {
+			const url = detalles.get(String(p.idExterno))?.imagen;
+			if (!url) continue;
+			p.imagen = url.replace(/(\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
+			p.cuerpo.data.fuente_imagen ??= "marca";
+			conFoto++;
+		}
+		console.log(`Fotos de la API de AliExpress: ${conFoto} de ${sinFotoAli.length} sin foto`);
+	} catch (e) {
+		console.log(`! No se pudieron pedir las fotos a la API de AliExpress (${e.message}); se probará con la página`);
+	}
+} else if (sinFotoAli.length) {
+	console.log(`! ${sinFotoAli.length} producto(s) sin foto y sin claves de la API de AliExpress: se buscará en la página (suele bloquear)`);
+}
 const conErrores = nuevos.filter((p) => p.errores.length);
 if (conErrores.length) {
 	console.error(`\n✗ ${conErrores.length} producto(s) con errores; no se ha importado nada:\n`);
