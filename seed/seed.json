@@ -98,7 +98,7 @@
 				},
 				{
 					"slug": "historial_precios",
-					"label": "Historial de precios (lo rellena update-prices)",
+					"label": "Historial de precios (lo rellena actualizar)",
 					"type": "text"
 				},
 				{

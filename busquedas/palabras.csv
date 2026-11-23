@@ -1,5 +1,5 @@
 palabra,categoria,cantidad,precio_min,precio_max
-# Palabras de la semana. La tarea «Top kawaii semanal» (lunes) y «npm run search» leen este fichero.
+# Palabras de la semana. El workflow «Import products» (lunes) y «npm run importar -- --buscar» leen este fichero.
 # - palabra: lo que se busca en la tienda (obligatoria)
 # - categoria: slug de la web; todos los productos de esa búsqueda van ahí.
 #   Vacía: cada producto se clasifica por lo que es.

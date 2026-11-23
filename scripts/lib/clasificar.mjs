@@ -1,7 +1,7 @@
 /**
  * Clasifica un producto en una categoría de la web a partir de su nombre (y, si hay, de la
- * palabra con la que se encontró). Se usa en import-products.mjs cuando el JSON no trae
- * "categorias", y en search-products.mjs cuando la fila del CSV no trae categoría.
+ * palabra con la que se encontró). Se usa en importar.mjs cuando el JSON no trae
+ * "categorias", y en lib/buscar.mjs cuando la fila del CSV no trae categoría.
  *
  * Las reglas van de la más concreta a la más general: gana la primera que encaja
  * (un «llavero de peluche» es un llavero; un «squishy de fresa» es squishy de comida).

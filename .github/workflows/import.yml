@@ -1,5 +1,6 @@
-# Imports products into the production EmDash and leaves them ready on the website:
-# import + publish, affiliate links, photos, prices and priority (scripts/importar-todo.mjs).
+# Imports new products into the production EmDash, complete and published in a single pass
+# (photo, affiliate link, price and priority from the AliExpress affiliate API): scripts/importar.mjs.
+# Keeping existing products up to date is the "Update products" workflow (actualizar.yml).
 #
 # Runs:
 #   - every Monday at 07:13 UTC (08:13 in Madrid in winter): searches AliExpress with the
@@ -49,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -59,7 +60,10 @@ jobs:
         id: what
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            list=$(git diff --name-only --diff-filter=AM HEAD^ HEAD -- 'datos/*.json' | tr '\n' ' ')
+            # Every JSON added or changed in the push (not only in its last commit)
+            base="${{ github.event.before }}"
+            git cat-file -e "$base^{commit}" 2>/dev/null || base=HEAD^
+            list=$(git diff --name-only --diff-filter=AM "$base" HEAD -- 'datos/*.json' | tr '\n' ' ')
             echo "args=$list" >> "$GITHUB_OUTPUT"
           elif [ -n "${{ inputs.file }}" ]; then
             echo "args=${{ inputs.file }}" >> "$GITHUB_OUTPUT"
@@ -67,9 +71,14 @@ jobs:
             echo "args=--buscar" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Import (photos, affiliate links and prices from the API)
+      - name: Import
         if: steps.what.outputs.args != ''
-        run: node scripts/importar-todo.mjs ${{ steps.what.outputs.args }} ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          for a in ${{ steps.what.outputs.args }}; do
+            echo "::group::$a"
+            node scripts/importar.mjs "$a" --publish ${{ inputs.dry_run && '--dry-run' || '' }}
+            echo "::endgroup::"
+          done
 
       # Keep the weekly search results in the repo, so the next search skips those products.
       - name: Save the search results

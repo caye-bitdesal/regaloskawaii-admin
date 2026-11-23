@@ -1,58 +1,87 @@
 #!/usr/bin/env node
 /**
- * Importa productos en EmDash desde un fichero JSON, usando la API REST.
+ * Da de alta productos nuevos en EmDash, ya completos, en una sola pasada:
+ *
+ *   1. (con --buscar) busca productos nuevos con la API de afiliados de AliExpress
+ *      a partir de un CSV de palabras (lib/buscar.mjs) y guarda el resultado en datos/;
+ *      sin --buscar, importa el JSON que le indiques.
+ *   2. Completa cada producto de AliExpress con la API (una llamada por cada 20 productos):
+ *      foto si falta, enlace de afiliado, precio e historial de precios.
+ *   3. Calcula su prioridad, sube la foto, lo crea y (con --publish) lo publica.
+ *      Una sola escritura por producto; nunca recorre el catálogo para actualizar nada
+ *      (eso es scripts/actualizar.mjs).
  *
  * Uso:
- *   EMDASH_TOKEN=ec_pat_… node scripts/import-products.mjs productos.json [--publish] [--dry-run]
+ *   npm run importar -- datos/top-kawaii-16-11.json --publish      importa un fichero
+ *   npm run importar -- --buscar --publish                         busca con busquedas/palabras.csv e importa
+ *   npm run importar -- --buscar=busquedas/squishy.csv --publish   busca con otro CSV e importa
+ *   añade --dry-run para simularlo todo sin escribir en EmDash
  *
- * Variables de entorno:
- *   EMDASH_URL    URL del panel (por defecto http://localhost:4321)
- *   EMDASH_TOKEN  Token de API con permisos de escritura (content:create, media:write)
- *   EMDASH_LOCALE Idioma del contenido (por defecto es)
+ * Variables de entorno (de .env si existe, o del workflow):
+ *   EMDASH_URL     URL del panel (por defecto http://localhost:4321)
+ *   EMDASH_TOKEN   Token de API con permisos de escritura (content:create, media:write)
+ *   EMDASH_LOCALE  Idioma del contenido (por defecto es)
+ *   ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET, ALIEXPRESS_TRACKING_ID   para buscar y completar
  *
  * Opciones:
- *   --publish    Publica cada producto al crearlo (por defecto se crean como borrador).
- *                 Los que se quedan sin foto también se publican, con prioridad 0
- *                 (salen al final de la web hasta que fill-photos les pone foto).
- *   --dry-run     No crea nada: valida el fichero y muestra lo que haría
- *   --images=DIR Carpeta donde buscar la foto de cada producto por su ID
- *                 (p. ej. images/1005007345370415.webp). Por defecto: images/
- *                 Solo se usa si el producto no lleva "imagen" y no es de Amazon.
- *   --no-web-photos No buscar la foto en la página de AliExpress cuando el producto no
- *                 trae "imagen" ni hay foto en la carpeta (por defecto sí se busca).
- *   --sin-clasificar No asignar categoría a los productos que no traen "categorias".
- *                 Por defecto se deduce del nombre (scripts/lib/clasificar.mjs), y a toda
- *                 subcategoría se le añade su categoría padre (squishy-comida → squishy).
+ *   --publish        Publica cada producto al crearlo (por defecto se crean como borrador).
+ *                    Los que se quedan sin foto también se publican, con prioridad 0.
+ *   --dry-run        No crea nada: valida y muestra lo que haría
+ *   --images=DIR     Carpeta donde buscar la foto de cada producto por su ID
+ *                    (p. ej. images/1005007345370415.webp). Por defecto: images/
+ *   --no-web-photos  No buscar la foto en la página de AliExpress como último recurso
+ *   --remove-bg      Quita el fondo de las fotos (necesita onnxruntime-node y sharp)
+ *   --sin-clasificar No deducir la categoría del nombre a los productos que no la traen.
+ *                    A toda subcategoría se le añade su categoría padre (squishy-comida → squishy).
+ *   Con --buscar:
+ *   --out=RUTA       JSON con lo encontrado (por defecto datos/busqueda-AAAA-MM-DD.json)
+ *   --categoria=SLUG categoría para las filas del CSV que no la traen
+ *   --cantidad=N     productos por palabra (por defecto 20)
+ *   --min-vendidos=N ventas mínimas en los últimos 30 días (por defecto 20)
+ *   --min-valoracion=N % mínimo de valoraciones positivas (por defecto 90)
+ *   --precio-max=N   precio máximo en euros (por defecto 40; el mínimo siempre es 5 €)
+ *   --paginas=N      páginas de 50 resultados por palabra (por defecto 2)
+ *   --permitir-marcas no descartar títulos con personajes o marcas registradas
  *
  * Formato del fichero: ver docs/import-products.md y docs/ejemplo-productos.json.
- * Los productos que ya existen (misma tienda e id_externo) se saltan, así que se
- * puede volver a ejecutar con el mismo fichero sin duplicar nada.
+ * Los productos que ya existen (misma tienda e id_externo) o que están en la papelera
+ * se saltan, así que se puede volver a ejecutar con el mismo fichero sin duplicar nada.
  */
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { apiAliExpressConfigurada, detallesAliExpress, esEnlaceAfiliadoAliExpress } from "./lib/aliexpress-api.mjs";
 import { registrarPrecio } from "./lib/price-history.mjs";
+import { buscarProductos } from "./lib/buscar.mjs";
+import { esUrl, fotoDePaginaAliExpress, fotoOriginalAliExpress, MIME, subirImagen } from "./lib/imagenes.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 import { clasificar } from "./lib/clasificar.mjs";
 import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
 import { basename, dirname, extname, resolve } from "node:path";
 import { clienteEmDash } from "./lib/emdash.mjs";
+import { fileURLToPath } from "node:url";
+
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+if (existsSync(resolve(RAIZ, ".env"))) process.loadEnvFile(resolve(RAIZ, ".env"));
 
 const args = process.argv.slice(2);
-const fichero = args.find((a) => !a.startsWith("--"));
+const opcion = (nombre) => args.find((a) => a.startsWith(`--${nombre}=`))?.split("=").slice(1).join("=");
+const argBuscar = args.find((a) => a === "--buscar" || a.startsWith("--buscar="));
+const CSV = argBuscar ? (opcion("buscar") ?? "busquedas/palabras.csv") : null;
+const SALIDA_BUSQUEDA = opcion("out") ?? `datos/busqueda-${new Date().toISOString().slice(0, 10)}.json`;
+const fichero = CSV ? SALIDA_BUSQUEDA : args.find((a) => !a.startsWith("--"));
 const PUBLICAR = args.includes("--publish");
 const SIMULAR = args.includes("--dry-run");
 const FOTOS_WEB = !args.includes("--no-web-photos");
 const QUITAR_FONDO = args.includes("--remove-bg");
 const CLASIFICAR = !args.includes("--sin-clasificar");
-let fondoDesactivado = false;
 let sinFotoEnBorrador = 0;
 const DIR_IMAGENES = resolve(args.find((a) => a.startsWith("--images="))?.slice(9) ?? "images");
 const API = (process.env.EMDASH_URL || "http://localhost:4321").replace(/\/+$/, "");
 const LOCALE = process.env.EMDASH_LOCALE ?? "es";
 const TOKEN = process.env.EMDASH_TOKEN;
 
-if (!fichero) salir("Uso: node scripts/import-products.mjs productos.json [--publish] [--dry-run]");
+if (!fichero) salir("Uso: npm run importar -- productos.json --publish   (o --buscar para buscar primero)");
+if (CSV && !apiAliExpressConfigurada()) salir("Para --buscar hacen falta ALIEXPRESS_APP_KEY y ALIEXPRESS_APP_SECRET");
 if (!TOKEN) salir("Falta EMDASH_TOKEN (en local: curl -X POST \"http://localhost:4321/_emdash/api/setup/dev-bypass?token=1\")");
 
 function salir(msg) {
@@ -161,88 +190,6 @@ function buscarImagenPorId(id) {
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/**
- * Busca la foto principal en la página pública del producto de AliExpress
- * (etiqueta og:image o la primera de la galería). Devuelve la URL o null.
- */
-async function fotoDeAliExpress(id) {
-	try {
-		const res = await fetch(`https://es.aliexpress.com/item/${id}.html`, {
-			headers: {
-				"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36",
-				"Accept-Language": "es-ES,es;q=0.9",
-			},
-		});
-		if (!res.ok) return null;
-		const html = await res.text();
-		const m =
-			html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
-			html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i) ??
-			html.match(/"imagePathList"\s*:\s*\[\s*"([^"]+)"/);
-		if (!m) return null;
-		let url = m[1].replace(/\\u002F/gi, "/").replace(/\\\//g, "/");
-		if (url.startsWith("//")) url = `https:${url}`;
-		// quita sufijos de tamaño: …/foto.jpg_640x640.jpg_.webp → …/foto.jpg
-		return url.replace(/(\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
-	} catch {
-		return null;
-	}
-}
-
-const MIME = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".avif": "image/avif", ".gif": "image/gif" };
-
-const esUrl = (s) => /^https?:\/\//i.test(s);
-
-/** Lee la foto: de disco o, si es una URL (p. ej. la foto de AliExpress del email diario), descargándola. */
-async function leerImagen(ruta) {
-	if (!esUrl(ruta)) return { buffer: await readFile(ruta), tipo: MIME[extname(ruta).toLowerCase()], nombre: basename(ruta) };
-	const res = await fetch(ruta);
-	if (!res.ok) throw new Error(`no se pudo descargar la imagen ${ruta} (HTTP ${res.status})`);
-	const tipo = (res.headers.get("content-type") ?? "").split(";")[0].trim();
-	if (!Object.values(MIME).includes(tipo)) throw new Error(`la imagen ${ruta} no es jpg, png, webp, avif ni gif (${tipo || "tipo desconocido"})`);
-	const ext = Object.keys(MIME).find((e) => MIME[e] === tipo);
-	return { buffer: Buffer.from(await res.arrayBuffer()), tipo, nombre: `${basename(new URL(ruta).pathname, extname(new URL(ruta).pathname))}${ext}` };
-}
-
-/** Con --remove-bg: quita el fondo con IA y sube un WebP transparente. Si falla, sube la original. */
-async function prepararFoto(buffer, tipo, nombre, esAmazon = false) {
-	if (!QUITAR_FONDO || esAmazon || fondoDesactivado) return { buffer, tipo, nombre };
-	try {
-		const { quitarFondo } = await import("./lib/remove-background.mjs");
-		const salida = await quitarFondo(buffer);
-		return { buffer: salida, tipo: "image/webp", nombre: `${nombre.replace(/\.[a-z0-9]+$/i, "")}-sinfondo.webp` };
-	} catch (e) {
-		if (e.code === "ERR_MODULE_NOT_FOUND") {
-			// Falta scripts/lib/remove-background.mjs (o sus dependencias): se avisa una vez y se sigue sin quitar fondos
-			console.log(`  ! No se pueden quitar fondos (${e.message.split(" imported from")[0]}): se suben las fotos originales.`);
-			fondoDesactivado = true;
-		} else {
-			console.log(`  ! no se pudo quitar el fondo de ${nombre}: ${e.message}; se sube la original`);
-		}
-		return { buffer, tipo, nombre };
-	}
-}
-
-async function subirImagen(ruta, alt, esAmazon = false) {
-	const leida = await leerImagen(ruta);
-	const { buffer, tipo, nombre } = await prepararFoto(leida.buffer, leida.tipo, leida.nombre, esAmazon);
-	if (!tipo) throw new Error(`formato de imagen no admitido: ${ruta}`);
-	const form = new FormData();
-	form.append("file", new Blob([buffer], { type: tipo }), nombre);
-	if (alt) form.append("alt", alt);
-	const { item } = await api("/media", { method: "POST", body: form });
-	return {
-		provider: "local",
-		id: item.id,
-		src: item.url,
-		alt: item.alt ?? alt,
-		width: item.width,
-		height: item.height,
-		filename: item.filename,
-		mimeType: item.mimeType,
-	};
-}
-
 // ---------- validación de cada producto ----------
 
 const TIPOS = new Set(["oficial", "generico", "no-oficial"]);
@@ -288,7 +235,7 @@ function preparar(p, i, ctx) {
 	}
 	if (imagen && !esUrl(imagen)) {
 		if (!existsSync(imagen)) {
-			// No bloquea: se crea sin esa foto (o con la de AliExpress) y se puede poner luego con fill-photos.
+			// No bloquea: se crea sin esa foto (o con la de AliExpress) y actualizar.mjs la pone después si la API la tiene.
 			console.log(`  ! ${pos}: no existe la imagen ${imagen}; se buscará otra o se creará sin foto`);
 			imagen = null;
 		} else if (!MIME[extname(imagen).toLowerCase()]) errores.push(`${pos}: formato de imagen no admitido (${basename(imagen)})`);
@@ -389,18 +336,15 @@ function preparar(p, i, ctx) {
 
 // ---------- programa ----------
 
-const productos = JSON.parse(await readFile(fichero, "utf8"));
-const lista = Array.isArray(productos) ? productos : productos.productos;
-if (!Array.isArray(lista)) {
-	// Manifiesto de export-affiliate-link-batch.mjs: no son productos nuevos.
-	if (productos && Array.isArray(productos.items) && productos.csvFile) {
-		salir(
-			`${fichero} es un lote de enlaces de afiliado (export-affiliate-link-batch.mjs), no una lista de productos.\n` +
-				`  Se aplica con: node scripts/apply-affiliate-link-batch.mjs ${fichero} <urls de Portals.csv>`,
-		);
-	}
-	salir('El fichero debe ser una lista [...] o un objeto { "productos": [...] }');
+async function leerLista(ruta) {
+	const json = JSON.parse(await readFile(ruta, "utf8"));
+	const lista = Array.isArray(json) ? json : json?.productos;
+	if (!Array.isArray(lista)) salir('El fichero debe ser una lista [...] o un objeto { "productos": [...] }');
+	return lista;
 }
+
+// Sin --buscar, el fichero se valida antes de tocar EmDash.
+let lista = CSV ? null : await leerLista(fichero);
 
 console.log(`EmDash: ${API}${SIMULAR ? " (simulación)" : ""}`);
 const [esquema, tiendas, colecciones, existentes, categorias, personajes, marcas] = await Promise.all([
@@ -440,6 +384,43 @@ for (let cursor; ; ) {
 const enPapelera = new Set(papelera.map((p) => clave(p.data?.id_externo ?? "")).filter(Boolean));
 const slugsUsados = new Set([...existentes, ...papelera].map((p) => p.slug));
 
+// --buscar: productos nuevos de la API de afiliados, sin los que ya están en EmDash o en la papelera.
+if (CSV) {
+	console.log(`\n━━━ Búsqueda en AliExpress (${CSV}) ━━━`);
+	const yaTenemos = new Set([...existentes, ...papelera].map((p) => String(p.data?.id_externo ?? "")).filter(Boolean));
+	const num = (n) => (opcion(n) == null ? undefined : Number(opcion(n)));
+	let resultado;
+	try {
+		resultado = await buscarProductos(CSV, {
+			yaTenemos,
+			salida: fichero,
+			categoria: opcion("categoria"),
+			cantidad: num("cantidad"),
+			minVendidos: num("min-vendidos"),
+			minValoracion: num("min-valoracion"),
+			precioMax: num("precio-max"),
+			paginas: num("paginas"),
+			permitirMarcas: args.includes("--permitir-marcas"),
+		});
+	} catch (e) {
+		salir(e.message);
+	}
+	const d = resultado.descartes;
+	console.log(
+		`\n${resultado.productos.length} producto(s) nuevos · descartados: ${d.repetido} ya los tenemos · ${d.marca} con marca registrada` +
+			` · ${d.vendidos} con pocas ventas · ${d.valoracion} con mala valoración · ${d.precio} fuera de precio · ${d.foto} sin foto`,
+	);
+	if (resultado.errores) process.exitCode = 1;
+	lista = resultado.productos;
+	if (!lista.length) {
+		console.log("Nada que importar.");
+		process.exit(process.exitCode ?? 0);
+	}
+	await mkdir(dirname(resolve(fichero)), { recursive: true });
+	await writeFile(fichero, `${JSON.stringify(lista, null, "\t")}\n`);
+	console.log(`Guardado en ${fichero}\n\n━━━ Importación ━━━`);
+}
+
 const ctx = {
 	tiendas,
 	colecciones: new Map(colecciones.map((c) => [clave(c.slug), c])),
@@ -472,7 +453,7 @@ const nuevos = preparados.filter((p) => p.estado === "nuevo");
 // Completa cada producto nuevo de AliExpress ANTES de guardarlo, con una sola consulta a la
 // API de afiliados por cada 20 productos: foto (si falta), enlace de afiliado, precio e
 // historial. Así cada producto se crea una vez, ya completo y con la prioridad que le toca,
-// sin pasadas posteriores por todo el catálogo (fill-photos, fill-affiliate-links, update-prices).
+// sin pasadas posteriores por todo el catálogo.
 const deAli = nuevos.filter((p) => p.tienda === "aliexpress" && p.idExterno);
 if (deAli.length && apiAliExpressConfigurada()) {
 	const c = { foto: 0, enlace: 0, precio: 0, fuera: 0 };
@@ -488,7 +469,7 @@ if (deAli.length && apiAliExpressConfigurada()) {
 			}
 			const data = p.cuerpo.data;
 			if (!p.imagen && d.imagen) {
-				p.imagen = d.imagen.replace(/(\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
+				p.imagen = fotoOriginalAliExpress(d.imagen);
 				data.fuente_imagen ??= "marca";
 				c.foto++;
 			}
@@ -560,14 +541,14 @@ for (const p of nuevos) {
 	let media;
 	try {
 		if (!p.imagen && FOTOS_WEB && p.tienda === "aliexpress" && p.idExterno) {
-			p.imagen = await fotoDeAliExpress(p.idExterno);
+			p.imagen = await fotoDePaginaAliExpress(p.idExterno);
 			await esperar(1000); // sin prisas: una página por segundo
 			if (!p.imagen) console.log(`  ! ${p.pos}: no se encontró la foto en AliExpress; se crea sin foto`);
 			else p.cuerpo.data.fuente_imagen ??= "marca";
 		}
 		if (p.imagen) {
 			try {
-				media = p.cuerpo.data.imagen = await subirImagen(p.imagen, p.alt);
+				media = p.cuerpo.data.imagen = await subirImagen(api, p.imagen, p.alt, { quitarFondo: QUITAR_FONDO });
 			} catch (e) {
 				if (!/^https?:/i.test(p.imagen)) throw e;
 				console.log(`  ! ${p.pos}: ${e.message}; se crea sin foto`);
