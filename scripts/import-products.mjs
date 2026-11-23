@@ -30,7 +30,8 @@
  */
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { apiAliExpressConfigurada, detallesAliExpress } from "./lib/aliexpress-api.mjs";
+import { apiAliExpressConfigurada, detallesAliExpress, esEnlaceAfiliadoAliExpress } from "./lib/aliexpress-api.mjs";
+import { registrarPrecio } from "./lib/price-history.mjs";
 import { calcularPrioridad } from "./lib/product-priority.mjs";
 import { clasificar } from "./lib/clasificar.mjs";
 import { tipoProductoPorDefecto } from "./lib/tienda.mjs";
@@ -468,27 +469,54 @@ for (const p of preparados) {
 }
 const nuevos = preparados.filter((p) => p.estado === "nuevo");
 
-// Fotos que faltan: primero con la API de afiliados (una llamada por cada 20 productos).
-// La página pública de AliExpress suele bloquear a los scripts, así que solo es el último recurso.
-const sinFotoAli = nuevos.filter((p) => !p.imagen && FOTOS_WEB && p.tienda === "aliexpress" && p.idExterno);
-if (sinFotoAli.length && apiAliExpressConfigurada()) {
+// Completa cada producto nuevo de AliExpress ANTES de guardarlo, con una sola consulta a la
+// API de afiliados por cada 20 productos: foto (si falta), enlace de afiliado, precio e
+// historial. Así cada producto se crea una vez, ya completo y con la prioridad que le toca,
+// sin pasadas posteriores por todo el catálogo (fill-photos, fill-affiliate-links, update-prices).
+const deAli = nuevos.filter((p) => p.tienda === "aliexpress" && p.idExterno);
+if (deAli.length && apiAliExpressConfigurada()) {
+	const c = { foto: 0, enlace: 0, precio: 0, fuera: 0 };
 	try {
-		const detalles = await detallesAliExpress(sinFotoAli.map((p) => String(p.idExterno)));
-		let conFoto = 0;
-		for (const p of sinFotoAli) {
-			const url = detalles.get(String(p.idExterno))?.imagen;
-			if (!url) continue;
-			p.imagen = url.replace(/(\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
-			p.cuerpo.data.fuente_imagen ??= "marca";
-			conFoto++;
+		const detalles = await detallesAliExpress(deAli.map((p) => String(p.idExterno)));
+		const ahora = new Date().toISOString();
+		for (const p of deAli) {
+			const d = detalles.get(String(p.idExterno));
+			if (!d) {
+				// Fuera del programa de afiliados: se crea igual, con prioridad 0 (sin enlace de afiliado).
+				c.fuera++;
+				continue;
+			}
+			const data = p.cuerpo.data;
+			if (!p.imagen && d.imagen) {
+				p.imagen = d.imagen.replace(/(\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
+				data.fuente_imagen ??= "marca";
+				c.foto++;
+			}
+			const promo = d.enlaceAfiliado?.trim();
+			if (promo && esEnlaceAfiliadoAliExpress(promo) && !esEnlaceAfiliadoAliExpress(data.enlace_afiliado ?? "")) {
+				data.enlace_afiliado = promo;
+				if (p.prioridad) p.prioridad.datos.enlace_afiliado = promo;
+				c.enlace++;
+			}
+			if (d.precio > 0) {
+				const precio = Math.round(d.precio * 100) / 100;
+				data.precio_ref = precio;
+				data.precio_actualizado = ahora;
+				if (ctx.campos.has("historial_precios")) data.historial_precios = JSON.stringify(registrarPrecio([], precio));
+				c.precio++;
+			}
 		}
-		console.log(`Fotos de la API de AliExpress: ${conFoto} de ${sinFotoAli.length} sin foto`);
+		console.log(
+			`API de AliExpress (${deAli.length} nuevos): ${c.foto} fotos · ${c.enlace} enlaces de afiliado · ${c.precio} precios` +
+				(c.fuera ? ` · ${c.fuera} fuera del programa (prioridad 0)` : ""),
+		);
 	} catch (e) {
-		console.log(`! No se pudieron pedir las fotos a la API de AliExpress (${e.message}); se probará con la página`);
+		console.log(`! No se pudo consultar la API de AliExpress (${e.message}); se importan con los datos del JSON`);
 	}
-} else if (sinFotoAli.length) {
-	console.log(`! ${sinFotoAli.length} producto(s) sin foto y sin claves de la API de AliExpress: se buscará en la página (suele bloquear)`);
+} else if (deAli.length) {
+	console.log(`! Sin claves de la API de AliExpress: ${deAli.length} producto(s) se importan sin enlace de afiliado ni precio actualizado`);
 }
+
 const conErrores = nuevos.filter((p) => p.errores.length);
 if (conErrores.length) {
 	console.error(`\n✗ ${conErrores.length} producto(s) con errores; no se ha importado nada:\n`);

@@ -67,7 +67,7 @@ jobs:
             echo "args=--buscar" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Import, affiliate links, photos, prices
+      - name: Import (photos, affiliate links and prices from the API)
         if: steps.what.outputs.args != ''
         run: node scripts/importar-todo.mjs ${{ steps.what.outputs.args }} ${{ inputs.dry_run && '--dry-run' || '' }}
 

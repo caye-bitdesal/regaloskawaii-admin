@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Hace en una sola orden todo lo necesario para que unos productos salgan bien en la web:
+ * Busca (opcional) e importa productos en una sola orden, y los deja listos en la web.
  *
- *   0. (con --buscar) busca productos con la API de afiliados de AliExpress   search-products.mjs
- *   1. los importa y los publica                                              import-products.mjs --publish
- *   2. pone los enlaces de afiliado                                           fill-affiliate-links.mjs
- *   3. pone fotos a los que no tienen                                         fill-photos.mjs --publish
- *   4. actualiza precios e historial                                          update-prices.mjs
- *   5. deja al final (prioridad 0) los que siguen sin foto                    deprioritize-without-photo.mjs
+ *   1. (con --buscar) busca productos con la API de afiliados de AliExpress   search-products.mjs
+ *   2. los importa y publica                                                  import-products.mjs --publish
  *
- * Si la importación falla, se para. Si falla un paso posterior, sigue con los demás y
- * al final dice cuáles fallaron (se pueden repetir: todos los pasos retoman donde iban).
+ * import-products completa cada producto de AliExpress antes de guardarlo (foto, enlace de
+ * afiliado, precio e historial, con una llamada a la API por cada 20 productos) y lo crea
+ * ya con su prioridad: una sola escritura por producto y ninguna pasada por todo el catálogo.
+ *
+ * fill-photos, fill-affiliate-links, update-prices y deprioritize-without-photo siguen
+ * existiendo para el mantenimiento del catálogo ya importado, por separado.
  *
  * Uso:
  *   npm run importar -- datos/top-kawaii-16-11.json         importa un fichero que ya tienes
@@ -21,12 +21,11 @@
  * Opciones:
  *   --images=DIR      carpeta de fotos locales (por defecto images/)
  *   --remove-bg       quita el fondo de las fotos nuevas (necesita onnxruntime-node y sharp)
- *   --sin-precios     se salta el paso 4
  *   Las demás opciones (--cantidad=, --precio-max=, --min-vendidos=…) se pasan a la búsqueda.
  *
  * Variables de entorno: las de .env (se carga solo si existe) o las del workflow:
  *   EMDASH_URL, EMDASH_TOKEN                                          obligatorias
- *   ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET, ALIEXPRESS_TRACKING_ID para búsqueda, enlaces, fotos y precios
+ *   ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET, ALIEXPRESS_TRACKING_ID para buscar y completar los productos
  */
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -39,18 +38,16 @@ if (existsSync(resolve(RAIZ, ".env"))) process.loadEnvFile(resolve(RAIZ, ".env")
 
 const args = process.argv.slice(2);
 const SIMULAR = args.includes("--dry-run");
-const SIN_PRECIOS = args.includes("--sin-precios");
 const QUITAR_FONDO = args.includes("--remove-bg");
 const IMAGENES = args.find((a) => a.startsWith("--images=")) ?? "--images=images";
 const argBuscar = args.find((a) => a === "--buscar" || a.startsWith("--buscar="));
-const PROPIAS = ["--dry-run", "--sin-precios", "--remove-bg"];
+const PROPIAS = ["--dry-run", "--remove-bg"];
 const opcionesBusqueda = args.filter(
 	(a) => a.startsWith("--") && !PROPIAS.includes(a) && !a.startsWith("--images=") && a !== argBuscar,
 );
 const ficheros = args.filter((a) => !a.startsWith("--"));
 
 const hayApi = Boolean(process.env.ALIEXPRESS_APP_KEY && process.env.ALIEXPRESS_APP_SECRET);
-const hayTracking = Boolean(process.env.ALIEXPRESS_TRACKING_ID?.trim());
 
 if (!process.env.EMDASH_TOKEN) salir("Falta EMDASH_TOKEN (en .env o en el entorno)");
 if (!argBuscar && !ficheros.length) {
@@ -83,17 +80,13 @@ function paso(titulo, script, scriptArgs = [], { obligatorio = false } = {}) {
 	return ok;
 }
 
-function omitir(titulo, motivo) {
-	resumen.push(`– ${titulo} (${motivo})`);
-}
-
 function imprimirResumen() {
 	console.log(`\n━━━ Resumen${SIMULAR ? " (simulación)" : ""} ━━━\n${resumen.join("\n")}`);
 }
 
 const dry = SIMULAR ? ["--dry-run"] : [];
 
-// 0. Búsqueda
+// 1. Búsqueda
 if (argBuscar) {
 	const csv = argBuscar.includes("=") ? argBuscar.split("=").slice(1).join("=") : "busquedas/palabras.csv";
 	const hoy = new Date().toISOString().slice(0, 10);
@@ -104,27 +97,12 @@ if (argBuscar) {
 	ficheros.push(salida);
 }
 
-// 1. Importar y publicar
+// 2. Importar, completar con la API y publicar
 for (const f of ficheros) {
 	paso(`Importar ${f}`, "import-products.mjs", [f, "--publish", IMAGENES, ...(QUITAR_FONDO ? ["--remove-bg"] : []), ...dry], {
 		obligatorio: true,
 	});
 }
-
-// 2. Enlaces de afiliado
-if (hayApi && hayTracking) paso("Enlaces de afiliado", "fill-affiliate-links.mjs", dry);
-else omitir("Enlaces de afiliado", "faltan las claves de AliExpress o el Tracking ID");
-
-// 3. Fotos
-paso("Fotos", "fill-photos.mjs", ["--publish", IMAGENES, ...(QUITAR_FONDO ? ["--remove-bg"] : []), ...dry]);
-
-// 4. Precios
-if (SIN_PRECIOS) omitir("Precios", "--sin-precios");
-else if (hayApi) paso("Precios", "update-prices.mjs", dry);
-else omitir("Precios", "faltan las claves de AliExpress");
-
-// 5. Los que siguen sin foto, al final
-paso("Prioridad de los productos sin foto", "deprioritize-without-photo.mjs", dry);
 
 imprimirResumen();
 if (resumen.some((l) => l.startsWith("✗"))) process.exitCode = 1;
