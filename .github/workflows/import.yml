@@ -1,40 +1,51 @@
-# Imports the product JSON files pushed to datos/ into the production EmDash.
+# Imports products into the production EmDash and leaves them ready on the website:
+# import + publish, affiliate links, photos, prices and priority (scripts/importar-todo.mjs).
 #
-# Runs on every push that adds or changes a .json in datos/ (products with a photo are
-# published, the rest stay as drafts), or manually from
-# GitHub → Actions → "Import products" → Run workflow.
+# Runs:
+#   - every Monday at 07:13 UTC (08:13 in Madrid in winter): searches AliExpress with the
+#     affiliate API using busquedas/palabras.csv and imports what it finds;
+#   - on every push that adds or changes a .json in datos/: imports those files;
+#   - manually from GitHub → Actions → "Import products" → Run workflow.
 #
 # Setup (GitHub → Settings → Secrets and variables → Actions):
-#   - Variable  EMDASH_URL   = https://admin.regaloskawaii.es
-#   - Secret    EMDASH_TOKEN = token created in the production admin panel with
-#                              content and media write permissions (never in the repo)
+#   - Variable  EMDASH_URL             = https://admin.regaloskawaii.es
+#   - Secret    EMDASH_TOKEN           = production admin token (content + media write)
+#   - Secrets   ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET, ALIEXPRESS_TRACKING_ID
 name: Import products
 
 on:
+  schedule:
+    - cron: "13 7 * * 1"
   push:
     branches: [main]
     paths: ["datos/**.json"]
   workflow_dispatch:
     inputs:
       file:
-        description: "JSON file to import (repo path, e.g. datos/top-kawaii-31-10.json)"
-        required: true
-      publish:
-        description: "Publish the products that have a photo (the rest stay as drafts)"
+        description: "JSON to import (e.g. datos/top-kawaii-31-10.json). Empty = search with busquedas/palabras.csv"
+        required: false
+      dry_run:
+        description: "Simulate only (writes nothing)"
         type: boolean
-        default: true
+        default: false
 
 concurrency:
   group: import-products
   cancel-in-progress: false
 
+permissions:
+  contents: write # to commit the JSON found by the weekly search
+
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       EMDASH_URL: ${{ vars.EMDASH_URL }}
       EMDASH_TOKEN: ${{ secrets.EMDASH_TOKEN }}
+      ALIEXPRESS_APP_KEY: ${{ secrets.ALIEXPRESS_APP_KEY }}
+      ALIEXPRESS_APP_SECRET: ${{ secrets.ALIEXPRESS_APP_SECRET }}
+      ALIEXPRESS_TRACKING_ID: ${{ secrets.ALIEXPRESS_TRACKING_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,40 +55,30 @@ jobs:
         with:
           node-version: 22
 
-      - name: Find files to import
-        id: files
+      - name: Decide what to import
+        id: what
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "list=${{ inputs.file }}" >> "$GITHUB_OUTPUT"
-          else
+          if [ "${{ github.event_name }}" = "push" ]; then
             list=$(git diff --name-only --diff-filter=AM HEAD^ HEAD -- 'datos/*.json' | tr '\n' ' ')
-            echo "list=$list" >> "$GITHUB_OUTPUT"
+            echo "args=$list" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ inputs.file }}" ]; then
+            echo "args=${{ inputs.file }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=--buscar" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Validate (dry run)
-        if: steps.files.outputs.list != ''
+      - name: Import, affiliate links, photos, prices
+        if: steps.what.outputs.args != ''
+        run: node scripts/importar-todo.mjs ${{ steps.what.outputs.args }} ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      # Keep the weekly search results in the repo, so the next search skips those products.
+      - name: Save the search results
+        if: always() && github.event_name != 'push' && !inputs.dry_run
         run: |
-          for f in ${{ steps.files.outputs.list }}; do
-            echo "::group::$f"
-            node scripts/import-products.mjs "$f" --dry-run
-            echo "::endgroup::"
-          done
-
-      - name: Import
-        if: steps.files.outputs.list != ''
-        run: |
-          for f in ${{ steps.files.outputs.list }}; do
-            echo "::group::$f"
-            node scripts/import-products.mjs "$f" ${{ (github.event_name == 'push' || inputs.publish) && '--publish' || '' }}
-            echo "::endgroup::"
-          done
-
-      - name: Fill in missing photos
-        if: steps.files.outputs.list != ''
-        continue-on-error: true
-        run: node scripts/fill-photos.mjs
-
-      # Only products with a photo are shown on the website.
-      - name: Unpublish products without a photo
-        if: steps.files.outputs.list != ''
-        run: node scripts/unpublish-without-photo.mjs
+          git add datos/busqueda-*.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+            git commit -m "datos: búsqueda semanal $(date +%F) [skip ci]"
+            git push
+          fi

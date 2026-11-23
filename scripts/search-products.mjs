@@ -98,7 +98,7 @@ async function leerCsv(ruta) {
 			palabra,
 			categoria: (iCategoria >= 0 && c[iCategoria]) || CATEGORIA,
 			cantidad: num(iCantidad >= 0 ? c[iCantidad] : undefined) ?? CANTIDAD,
-			precioMin: num(iMin >= 0 ? c[iMin] : undefined) ?? 0,
+			precioMin: Math.max(5, num(iMin >= 0 ? c[iMin] : undefined) ?? 0), // nunca menos de 5 €
 			precioMax: num(iMax >= 0 ? c[iMax] : undefined) ?? PRECIO_MAX,
 		});
 	}
